@@ -1,0 +1,44 @@
+# Env file format
+#
+# This file contains the configuration for a MongoDB service
+# and a Mongo Express web-based admin interface using Docker Compose.
+#
+# Required environment variables:
+# PROJECT_NAME: The name of the MongoDB database to be created.
+# DB_PASSWORD: The password for the MongoDB root user.
+# WEB_UI_PASSWORD: The password for the Mongo Express web interface.
+version: '3.8'
+
+services:
+  # Exposes a MongoDB service at port 27017 with a root user.
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/:/docker-entrypoint-initdb.d/:ro
+    env_file:
+      - ./.env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD:?"DB_PASSWORD is not set in the environment file."}
+      MONGO_INITDB_DATABASE: ${PROJECT_NAME:?"PROJECT_NAME is not set in the environment file."}
+
+  # Exposes a Mongo Express web interface at port 8081 for managing the MongoDB instance.
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    env_file:
+      - ./.env
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://root:${DB_PASSWORD:?"DB_PASSWORD is not set in the environment file."}@mongodb:27017/${PROJECT_NAME:?"PROJECT_NAME is not set in the environment file."}
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: root
+      ME_CONFIG_BASICAUTH_PASSWORD: ${WEB_UI_PASSWORD:?"WEB_UI_PASSWORD is not set in the environment file."}
+
+volumes:
+  mongodb_data:
