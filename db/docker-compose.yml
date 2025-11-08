@@ -16,7 +16,7 @@ services:
     container_name: mongodb
     restart: unless-stopped
     volumes:
-      - mongodb_data:/data/db
+      # - mongodb_data:/data/db
       - ./scripts/:/docker-entrypoint-initdb.d/:ro
     env_file:
       - ./.env
