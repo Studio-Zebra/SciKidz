@@ -1,57 +1,46 @@
-import express from 'express'
-import User from '../models/User.js'
+import express from 'express';
+import User from '../models/User.js';
+import authMiddleware from '../middleware/authMiddleware.js';
+const router = express.Router();
 
-const router = express.Router()
-
-router.post('/', async (req, res) => {
-    try {
-        console.log('Incoming body: ', req.body)
-        const { name, email, password } = req.body;
-
-if (!name || !email || !password) {
-    return res.status(400).json({ error: 'All fields required'})
-}
-
-        const user = new User({
-            name,
-            email,
-            passwordHash: password
-        });
-        
-        await user.save()
-        res.status(201).json(user)
-    } catch (err) {
-        res.status(400).json({ error: err.message })
-    }
-})
-
-router.get('/', async (req, res) => {
-    const users = await User.find()
-    res.json(users)
-})
-
-router.put('/:id', async (req, res) => {
-    const updated = await User.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true }
-    );
-if (!updated) return res.status(404).json({ error: 'User not found' });
-res.json(updated);
+// ----------------------------------
+// GET logged-in user's info
+// ----------------------------------
+router.get('/me', authMiddleware, async (req, res) => {
+  const user = await User.findById(req.user.id).select('-passwordHash');
+  res.json(user);
 });
 
-router.delete('/:id', async (req, res) => {
-    try {
-        const deletedUser = await User.findByIdAndDelete(req.params.id);
+// ----------------------------------
+// UPDATE logged-in user's info
+// ----------------------------------
+router.put('/me', authMiddleware, async (req, res) => {
+  const { username, firstName, lastName, email } = req.body;
 
-        if (!deletedUser) {
-            return res.status(404).json ({ error: 'User not found' });
-        }
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user.id,
+    { username, firstName, lastName, email },
+    { new: true }
+  ).select('-passwordHash');
 
-        res.json({ message: 'User deleted' });
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
+  res.json(updatedUser);
 });
 
-export default router
+// ----------------------------------
+// DELETE logged-in user's account
+// ----------------------------------
+router.delete('/me', authMiddleware, async (req, res) => {
+  await User.findByIdAndDelete(req.user.id);
+  res.json({ message: 'Account deleted' });
+});
+
+// ----------------------------------
+// ADMIN protected: get all users
+// ----------------------------------
+router.get('/', authMiddleware, async (req, res) => {
+  // optionally check req.user.role === "admin"
+  const users = await User.find().select('-passwordHash');
+  res.json(users);
+});
+
+export default router;
