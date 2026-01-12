@@ -70,39 +70,47 @@ router.post('/register', async (req, res) => {
 
 
 router.post('/login', async (req, res) => {
-    try {
-      const { email, password } = req.body;
-  
-      if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required.' });
-      }
-  
-      const user = await User.findOne({ email });
-      if (!user) {
-        return res.status(401).json({ error: 'Invalid credentials.' });
-      }
-  
-      const isMatch = await bcrypt.compare(password, user.passwordHash);
-      if (!isMatch) {
-        return res.status(401).json({ error: 'Invalid credentials.' });
-      }
-  
-      const token = createToken(user);
-  
-      res.json({
-        token,
-        user: {
-          id: user._id,
-          username: user.username,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-        },
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Server error during login.' });
+  try {
+    const { identifier, password } = req.body;
+
+    if (!identifier || !password) {
+      return res.status(400).json({ error: 'Identifier and password are required.' });
     }
-  });
+
+    const cleanIdentifier = String(identifier).trim();
+    const cleanEmail = cleanIdentifier.toLowerCase();
+
+    // Search by email OR username
+    const user = await User.findOne({
+      $or: [{ email: cleanEmail }, { username: cleanIdentifier }]
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid username/email or password.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid username/email or password.' });
+    }
+
+    const token = createToken(user);
+
+    return res.json({
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error during login.' });
+  }
+});
 
 export default router;

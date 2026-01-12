@@ -11,9 +11,9 @@
   
         <!-- Username -->
         <input
-          v-model="username"
+          v-model="identifier"
           type="text"
-          placeholder="Username"
+          placeholder="Username or Email"
           class="input-field"
         />
   
@@ -26,7 +26,7 @@
         />
   
         <!-- Login Button -->
-        <button class="login-btn" @click="handleLogin">
+        <button class="login-btn" @click="login">
           Log in
         </button>
   
@@ -49,26 +49,31 @@
   <script setup>
   import { ref } from 'vue'
   import { useRouter } from 'vue-router'
-  import axios from '../services/axios'
+  import api from '../services/axios'
   
   const router = useRouter()
-  const username = ref('')
+  const identifier = ref('')
   const password = ref('')
   
-  const handleLogin = async () => {
-    try {
-      const res = await axios.post('/auth/login', {
-        username: username.value,
-        password: password.value
-      })
-  
-      localStorage.setItem('token', res.data.token)
-      router.push('/dashboard')
-    } catch (err) {
-      console.error('Login failed', err)
-      alert('Invalid username or password')
+  const login = async () => {
+  try {
+    const payload = {
+      identifier: identifier.value.trim(),
+      password: password.value
     }
+
+    const res = await api.post('/auth/login', payload)
+
+    // store session
+    localStorage.setItem('token', res.data.token)
+    localStorage.setItem('user', JSON.stringify(res.data.user))
+
+    router.push('/dashboard')
+  } catch (err) {
+    console.error('Login failed:', err?.response?.data || err)
+    alert(err?.response?.data?.error || 'Invalid username/email or password')
   }
+}
   
   const goToRegister = () => {
     router.push('/register')
@@ -106,7 +111,7 @@
     width: 100%;
     display: block;
     margin-left: auto;
-    margin-right: autp;
+    margin-right: auto;
     padding: 14px 16px;
     margin-bottom: 16px;
     border-radius: 10px;
