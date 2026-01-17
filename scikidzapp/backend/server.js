@@ -1,32 +1,37 @@
-import dns from "dns"
-dns.setDefaultResultOrder("ipv4first")
+import dns from "dns";
+dns.setDefaultResultOrder("ipv4first");
 
-import express from 'express'
-import dotenv from 'dotenv'
-import cors from 'cors'
-import mongoose from 'mongoose'
-import { connectDB } from './config/db.js'
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import { connectDB } from "./config/db.js";
 
-import userRoutes from './routes/userRoutes.js'
-import progressRoutes from './routes/progressRoutes.js'
-import lessonRoutes from './routes/lessonRoutes.js'
-import authRoutes from './routes/authRoutes.js'
+console.log("1) server.js loaded");
 
 dotenv.config();
-connectDB();
-
+console.log("2) dotenv loaded. MONGO_URI present?", !!process.env.MONGO_URI);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-//test
-app.get('/', (req, res) => res.send('Backend API running!'));
+app.get("/", (req, res) => res.send("Backend API running!"));
 
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/progress', progressRoutes);
-app.use('/api/lessons', lessonRoutes);
+console.log("3) routes about to mount");
+import userRoutes from "./routes/userRoutes.js";
+import progressRoutes from "./routes/progressRoutes.js";
+import lessonRoutes from "./routes/lessonRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
-const PORT = process.env.PORT || 5757
-app.listen(5757, () => console.log('Server running on port 5757'));
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/progress", progressRoutes);
+app.use("/api/lessons", lessonRoutes);
+
+const PORT = process.env.PORT || 5757;
+
+app.listen(PORT, () => console.log(`4) Server running on port ${PORT}`));
+
+// Connect AFTER listen so the server still starts (debug mode)
+console.log("5) calling connectDB()");
+connectDB();

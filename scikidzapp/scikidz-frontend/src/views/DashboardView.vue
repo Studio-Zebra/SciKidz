@@ -1,21 +1,21 @@
 <template>
     <div class="page">
-      <!-- Top App Bar -->
+      
       <header class="appbar">
         <button class="icon-btn" aria-label="Menu" @click="toggleMenu">
-          <!-- hamburger -->
+          
           <svg viewBox="0 0 24 24" class="icon">
             <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </button>
   
         <div class="brand">
-          <!-- Put scikidz-logo.png in /public/assets/ -->
+          
           <img class="brand-logo" src="/assets/scikidz-logo.png" alt="SciKidz" />
         </div>
   
         <button class="icon-btn" aria-label="Edit Profile" @click="goToProfile">
-          <!-- pencil in a circle -->
+          
           <svg viewBox="0 0 24 24" class="icon">
             <path d="M12 22a10 10 0 1 1 10-10 10 10 0 0 1-10 10Z" fill="none" stroke="currentColor" stroke-width="2"/>
             <path d="M8.5 15.5 16 8l1.5 1.5-7.5 7.5H8.5v-1.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
@@ -23,7 +23,7 @@
         </button>
       </header>
   
-      <!-- Optional slide-down menu (simple) -->
+      
       <div v-if="menuOpen" class="menu-panel" @click.self="menuOpen=false">
         <div class="menu-card">
           <button class="menu-item" @click="goToProfile">Profile</button>
@@ -31,7 +31,7 @@
         </div>
       </div>
   
-      <!-- Content -->
+      
       <main class="content">
         <section class="cards">
           <article
@@ -39,7 +39,7 @@
             :key="lesson.id"
             class="lesson-card"
           >
-            <!-- Card header bar -->
+            
             <div class="card-top" :style="{ background: lesson.ribbonColor }">
               <div class="card-title-wrap">
                 <div class="card-title">{{ lesson.title }}</div>
@@ -51,7 +51,7 @@
               </button>
             </div>
   
-            <!-- Card image -->
+            
             <div class="card-media">
               <img :src="lesson.imageUrl" :alt="lesson.title" />
               <button class="open-btn" @click="openModule(lesson)">
@@ -67,7 +67,6 @@
   <script setup>
   import { ref } from "vue";
   import { useRouter } from "vue-router";
-  // later: import api from "../services/axios";
   
   const router = useRouter();
   const menuOpen = ref(false);
@@ -77,8 +76,7 @@
   };
   
   const goToProfile = () => {
-    // if you don’t have this route yet, keep it as a placeholder
-    // router.push("/profile");
+    ß
     alert("Profile screen not implemented yet.");
   };
   
@@ -88,14 +86,14 @@
     router.push("/login");
   };
   
-  // Demo lessons (swap to API later)
+  
   const lessons = ref([
     {
       id: "water-cycle",
       title: "The Water Cycle",
       grade: "3RD GRADE",
       ribbonColor: "#6EC6F4",
-      imageUrl: "/assets/lesson-watercycle.png", // put in /public/assets
+      imageUrl: "/assets/lesson-watercycle.png",
     },
     {
       id: "atoms-molecules",
@@ -114,7 +112,6 @@
   ]);
   
   const openModule = (lesson) => {
-    // Future: router.push(`/ar/${lesson.id}`) or `/lessons/${lesson.id}`
     alert(`Open module: ${lesson.title}`);
   };
   
@@ -162,7 +159,7 @@
   }
   
   .brand-logo {
-    height: 34px;
+    height: 68px;
     width: auto;
   }
   
