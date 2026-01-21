@@ -3,14 +3,14 @@
 */
 
 :root {
-  /* Global font used everywhere */
+
   --app-font: system-ui, Avenir, Helvetica, Arial, sans-serif;
 
   font-family: var(--app-font);
   line-height: 1.5;
   font-weight: 400;
 
-  /* Keep things simple for the app UI */
+
   color-scheme: light;
 
   font-synthesis: none;
@@ -18,12 +18,11 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Optional: set a sensible default text color */
+
   color: #213547;
   background-color: #ffffff;
 }
 
-/* Links (keep if you still want default link styling) */
 a {
   font-weight: 500;
   color: #646cff;
@@ -33,7 +32,6 @@ a:hover {
   color: #535bf2;
 }
 
-/* App layout reset (remove Vite demo centering) */
 html,
 body {
   height: 100%;
@@ -46,14 +44,11 @@ body {
   background: #ffffff;
 }
 
-/* Make Vue app fill the viewport so your dashboard controls layout */
 #app {
   width: 100%;
   min-height: 100vh;
 }
 
-/* IMPORTANT: force form controls to inherit the global font
-   (prevents "button font mismatch" across browsers) */
 button,
 input,
 textarea,
@@ -61,7 +56,7 @@ select {
   font-family: inherit;
 }
 
-/* Neutral baseline button so component styles (.open-btn, .icon-btn, etc.) win */
+
 button {
   border: none;
   background: none;
@@ -70,7 +65,6 @@ button {
   cursor: pointer;
 }
 
-/* Optional: keep focus visible for accessibility */
 button:focus,
 button:focus-visible,
 input:focus,
@@ -80,7 +74,7 @@ select:focus {
   outline-offset: 2px;
 }
 
-/* Optional: remove default input styling differences a bit */
+
 input,
 textarea,
 select {
@@ -88,11 +82,6 @@ select {
   outline: none;
 }
 
-/* ---- Remove/avoid Vite starter leftovers ----
-   If you used these classes previously, keep them;
-   otherwise they can be removed safely. */
-
-/* .card was part of Vite demo - keep only if your app uses it */
 .card {
   padding: 2em;
 }
