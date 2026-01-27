@@ -54,10 +54,11 @@
             
             <div class="card-media">
               <img :src="lesson.imageUrl" :alt="lesson.title" />
-              <button class="open-btn" @click="openModule(lesson)">
+                <button class="open-btn" @click.stop="openModule(lesson)">
                 Open Module
-              </button>
+                </button>
             </div>
+
           </article>
         </section>
       </main>
@@ -67,6 +68,12 @@
   <script setup>
   import { ref } from "vue";
   import { useRouter } from "vue-router";
+
+  function openModule(lesson) {
+  // prefer moduleId/slug if present; fallback to hardcoded for testing
+  const moduleId = lesson.moduleId || lesson.slug || 'water-cycle'
+  router.push(`/modules/${moduleId}/lesson`)
+}
   
   const router = useRouter();
   const menuOpen = ref(false);
@@ -110,10 +117,6 @@
       imageUrl: "/assets/lesson-mechanics.png",
     },
   ]);
-  
-  const openModule = (lesson) => {
-    alert(`Open module: ${lesson.title}`);
-  };
   
   const openLessonMenu = (lesson) => {
     alert(`Lesson options for: ${lesson.title}`);

@@ -6,16 +6,24 @@ import Register2View from '../views/Register2View.vue'
 import Register3View from '../views/Register3View.vue'
 import DashboardView from '../views/DashboardView.vue'
 
+//lesson views
+import LessonView from '../views/LessonView.vue'
+//import ARView from '../views/ARView.vue'
+//import RecapView from '../views/RecapView.vue'
+//import QuizView from '../views/QuizView.vue'
+//import ResultsView from '../views/ResultsView.vue'
+
 const routes = [
   { path: '/', redirect: '/login' },
 
-  { path: '/login', name: 'Login', component: LoginView },
+  { path: '/login', name: 'Login', component: LoginView, meta: { showMenu: false } },
 
-  { path: '/register', name: 'Register1', component: Register1View },
-  { path: '/register/step2', name: 'Register2', component: Register2View },
-  { path: '/register/step3', name: 'Register3', component: Register3View },
+  { path: '/register', name: 'Register1', component: Register1View, meta: { showMenu: false } },
+  { path: '/register/step2', name: 'Register2', component: Register2View, meta: { showMenu: false } },
+  { path: '/register/step3', name: 'Register3', component: Register3View, meta: { showMenu: false } },
 
-  { path: '/dashboard', name: 'Dashboard', component: DashboardView },
+  { path: '/dashboard', name: 'Dashboard', component: DashboardView, meta: { showMenu: true } },
+  { path: '/modules/:moduleId/lesson', name: 'Lesson', component: LessonView, meta: { showMenu: false } }
 ]
 
 const router = createRouter({
