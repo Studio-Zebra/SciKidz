@@ -8,7 +8,7 @@
         </div>
   
         <main class="content">
-          <h1 class="recap-title">Recap</h1>
+          <h1 class="recap-title">Lesson Recap</h1>
           <h2 class="recap-subtitle">{{ recap.subtitle }}</h2>
           <p class="recap-text">{{ recap.body }}</p>
         </main>
@@ -35,7 +35,7 @@
   const module = computed(() => MODULES[moduleId.value] || MODULES['water-cycle'])
   
   const recap = computed(() => ({
-    subtitle: 'Example Sub-Text for recap',
+    subtitle: 'A look back',
     body:
       'The water cycle describes how water moves through Earth’s air, land, and oceans. Sunlight causes evaporation, turning liquid water into water vapor. As the vapor rises and cools, it condenses into tiny droplets to form clouds. When droplets combine and become heavy, precipitation falls as rain, snow, sleet, or hail. Water then collects in rivers, lakes, oceans, and underground, where the cycle repeats.',
   }))
