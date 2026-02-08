@@ -1,29 +1,25 @@
 <template>
     <div class="lesson-view">
-      
-      <header class="topbar">
-        <button class="icon-btn" type="button" @click="goBack" aria-label="Go back">
-          ‹
-        </button>
-  
-        <div class="topbar-title">
-          {{ module.title }}
-        </div>
-  
-        
-        <button class="icon-btn" type="button" @click="goHome" aria-label="Return to dashboard">
-          ⌂
-        </button>
-      </header>
-  
-      
+
       <main class="content">
         <!-- Full-bleed banner (matches mock: edge-to-edge, no rounding) -->
-<section class="banner">
-    <div
-  class="banner-bg"
-  :style="bannerStyle"
-  aria-hidden="true"
+        <section class="banner">
+  <div class="banner-bg" :style="bannerStyle" aria-hidden="true"></div>
+  <div class="banner-fade" aria-hidden="true"></div>
+
+  <!-- Floating controls (no physical top bar) -->
+  <div class="banner-controls">
+    <button class="float-btn" type="button" @click="goBack" aria-label="Go back">‹</button>
+    
+  </div>
+
+  <div class="banner-overlay">
+    <div class="banner-title">{{ module.title }}</div>
+  </div>
+
+  <button class="banner-play" type="button" @click="startAR" aria-label="Start AR experience">
+    ▶
+  </button>
 />
 
 
@@ -32,7 +28,7 @@
 
   <!-- Overlay content -->
   <div class="banner-overlay">
-    <div class="banner-pill">{{ module.category }}</div>
+    
     <div class="banner-title">{{ module.title }}</div>
   </div>
 
@@ -45,6 +41,26 @@
 <div class="lesson-text">
   <div class="subtext">{{ module.subtitle }}</div>
   <div class="bodytext">{{ module.description }}</div>
+
+  <!-- Lesson diagram image -->
+  <img
+    v-if="module.lessonImage"
+    class="lesson-image"
+    :src="module.lessonImage"
+    :alt="`${module.title} diagram`"
+  />
+
+  <!-- Additional lesson content -->
+<section
+  v-for="(section, index) in module.sections"
+  :key="index"
+  class="lesson-section"
+>
+  <h3 class="section-title">{{ section.heading }}</h3>
+  <p class="section-body">{{ section.text }}</p>
+</section>
+
+
 </div>
   
       </main>
@@ -72,10 +88,35 @@
     'water-cycle': {
       title: 'The Water Cycle',
       category: 'Earth Science',
-      subtitle: 'Example sub-text for this module',
+      subtitle: 'How water moves through Earth’s air, land, and oceans',
       description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. This is placeholder text for the module lesson view. Replace with real lesson content pulled from your backend later.',
+        'The water cycle is the continuous journey water takes as it moves through the Earth and the atmosphere. Water is always changing location and sometimes changing form, but the total amount of water on Earth stays about the same.',
         heroImage: '/assets/lesson-watercycle.png',
+        lessonImage: '/assets/water-cycle-diagram.png',
+        sections: [
+    {
+      heading: 'Evaporation',
+      text:
+        'Evaporation happens when the Sun heats water in oceans, lakes, and rivers, turning it into water vapor that rises into the air.',
+    },
+    {
+      heading: 'Condensation',
+      text:
+        'As water vapor rises and cools, it changes back into tiny water droplets, forming clouds in the sky.',
+    },
+    {
+      heading: 'Precipitation',
+      text:
+        'When clouds become heavy, water falls back to Earth as rain, snow, sleet, or hail.',
+    },
+    {
+      heading: 'Collection',
+      text:
+        'Water gathers in oceans, rivers, lakes, and underground, where the cycle begins again.',
+    },
+  ]
+
+,
     },
     'atoms-and-molecules': {
       title: 'Atoms and Molecules',
@@ -97,6 +138,10 @@
   
   function goBack() {
     router.back()
+  }
+
+  function startAR(){
+    router.push(`/modules/${moduleId.value}/ar`)
   }
   
   function goHome() {
@@ -128,40 +173,17 @@
     }
   
   /* Header */
-  .topbar {
-    height: 54px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 10px;
-    background: #ffffff;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-  }
-  
-  .topbar-title {
-    font-weight: 800;
-    font-size: 16px;
-    color: #2b2f33;
-    text-align: center;
-    max-width: 70%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  .icon-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    border: 1px solid rgba(0,0,0,0.12);
-    background: #fff;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    font-size: 18px;
-  }
+
   
   /* Main content */
+  .banner {
+  position: relative;
+  width: 100%;
+  height: 235px;        /* adjust as needed */
+  overflow: hidden;
+  border-radius: 0;
+}
+
   .content {
   padding: 0; /* IMPORTANT: banner is full-bleed, padding happens below it */
     }
@@ -191,6 +213,15 @@
   transform: scale(1.02); /* helps avoid any 1px edge gaps */
 }
 
+.banner-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
 .banner-fade {
   position: absolute;
   left: 0;
@@ -205,6 +236,81 @@
   );
 }
 
+.banner-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 90px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.65) 45%,
+    rgba(255,255,255,1) 100%
+  );
+  z-index: 2;
+}
+.float-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 32px;               /* Figma looks like rounded square */
+  border: 1px solid rgb(0, 15, 65);
+  background: rgba(255,255,255,0.68);
+  backdrop-filter: blur(6px);         /* nice “floating” feel */
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  color: rgba(0,0,0,0.75);
+}
+
+.banner-overlay {
+  position: absolute;
+  left: 14px;
+  bottom: 18px;
+  right: 78px; /* space for play button */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 3;
+}
+.banner-title {
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.02;
+  color: rgba(0,0,0,0.80);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+  margin: 0;
+}
+
+.banner-play {
+  position: absolute;
+  right: 14px;
+  bottom: 20px;
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  border: none;
+  background: #4bb3f0;
+  color: #ffffff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  z-index: 5;
+}
+
+.banner-controls {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 12px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 4;
+}
+
 .banner-overlay {
   position: absolute;
   left: 14px;
@@ -215,22 +321,11 @@
   gap: 10px;
 }
 
-.banner-pill {
-  width: fit-content;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.85);
-  border: 1px solid rgba(0,0,0,0.08);
-  font-size: 12px;
-  font-weight: 800;
-  color: rgba(0,0,0,0.65);
-}
-
 .banner-title {
-  font-size: 28px;     /* IMPORTANT: larger text like mock */
+  font-size: 42px;     /* IMPORTANT: larger text like mock */
   font-weight: 900;
   line-height: 1.02;
-  color: rgba(0,0,0,0.80);
+  color: rgba(0, 61, 92, 0.8);
   text-shadow: 0 1px 0 rgba(255,255,255,0.35); /* subtle readability */
 }
 
@@ -239,8 +334,8 @@
   position: absolute;
   right: 14px;
   bottom: 20px;          /* sits above the fade */
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
   border-radius: 999px;
   border: none;
   background: #4bb3f0;   /* solid blue like mock */
@@ -248,25 +343,25 @@
   cursor: pointer;
   display: grid;
   place-items: center;
-  font-size: 18px;
+  font-size: 32px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.25);
 }
 
 
 /* ===== Text under banner ===== */
 .lesson-text {
-  padding: 10px 14px 0;
+  padding: 1px 18px 0;
 }
 
 .subtext {
-  font-size: 12px;
+  font-size: 28px;
   font-weight: 800;
   color: rgba(0,0,0,0.55);
-  margin-bottom: 8px;
+  margin: 0 0 6px;
 }
 
 .bodytext {
-  font-size: 13px;
+  font-size: 20px;
   line-height: 1.45;
   color: rgba(0,0,0,0.70);
   margin-bottom: 12px;
@@ -311,7 +406,7 @@
   
   .hero-title {
     margin: 0;
-    font-size: 22px;
+    font-size: 32px;
     font-weight: 900;
     color: rgba(0,0,0,0.82);
   }
@@ -408,6 +503,14 @@
     border-color: rgba(0,0,0,0.06);
   }
   
+  .lesson-image {
+  width: 100%;
+  margin-top: 14px;          /* space from description */
+  border-radius: 14px;       /* soft card look like mock */
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #ffffff;
+}
+
   .btn:hover,
   .icon-btn:hover,
   .hero-play:hover {
