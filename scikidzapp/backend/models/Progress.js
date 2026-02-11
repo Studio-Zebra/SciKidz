@@ -7,18 +7,38 @@ const progressSchema = new mongoose.Schema({
     },
     lessonId: { type: mongoose.Schema.Types.ObjectId,
                 ref: 'Lesson',
-                required: true
+                required: true,
+                index: true,
     },
-    completionStatus: { type: String,
-                        enum: ['not_started','in_progress', 'completed'],
-                        default: 'not_started'
+    completionPercent: { type: Number,
+                        min: 0,
+                        max: 100,
+                        default: 0,
     },
-    score: { type: Number,
-         default: 0
+    completionStatus: {
+                         type: String,
+                         enum: ['not_started', 'in_progress', 'completed'],
+                         default: 'not_started',
     },
-    updatedAt: { type: Date,
-         default: Date.now 
-    }
-})
+    quiz: {
+     bestScore: { type: Number, min: 0, max: 100, default: 0 },
+     lastScore: { type: Number, min: 0, max: 100, default: 0 },
+     attempts:  { type: Number, min: 0, default: 0},
+     lastAttemptAt: { type: Date },
+          },
+       },
+    { timestamps: true }
+)
+
+progressSchema.index({ userId: 1, lessonId: 1}, { unique: true })
+
+progressSchema.pre('save', function(next) {
+     const pct = this.completionPercent ?? 0
+     if (pct <= 0) this.completionStatus = 'not_started'
+     else if (pct >= 100) this.completionStatus = 'completed'
+     else this.completionStatus = 'in_progress'
+     next()
+   })
+   
 
 export default mongoose.model('Progress', progressSchema)
