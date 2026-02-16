@@ -81,9 +81,53 @@ const MODULES = {
       },
     ],
   },
+  'atoms-molecules': {
+    title: 'Atoms and Molecules',
+    subtitle: 'How tiny particles build everything around us',
+    description:
+      'Everything you can touch is made of matter—and matter is made of atoms. Atoms can join together in different ways to form molecules, which make up substances like water, air, and even you.',
+    heroImage: '/assets/lesson-atoms.png',
+    lessonImage: '/assets/atoms-diagram.png', // add this asset or remove this line for now
+    sections: [
+      {
+        heading: 'What is an Atom?',
+        text:
+          'An atom is the smallest unit of an element that still keeps that element’s properties. Examples of elements are oxygen, carbon, and gold.',
+      },
+      {
+        heading: 'Parts of an Atom',
+        text:
+          'Atoms have a nucleus in the center with protons (positive) and neutrons (neutral). Electrons (negative) move around the nucleus.',
+      },
+      {
+        heading: 'What is a Molecule?',
+        text:
+          'A molecule forms when two or more atoms bond together. For example, water (H₂O) is a molecule made from hydrogen and oxygen atoms.',
+      },
+      {
+        heading: 'Why Bonds Matter',
+        text:
+          'Different atoms and different bonds create substances with different properties—like hardness, melting point, and how they react with other substances.',
+      },
+    ],
+  },
+
+  'basic-mechanics': {
+    title: 'Basic Mechanics',
+    subtitle: 'Forces, motion, and how things move',
+    description:
+      'Mechanics is the study of motion and the forces that cause it. From pushing a door to launching a rocket, forces explain why objects speed up, slow down, and change direction.',
+    heroImage: '/assets/lesson-mechanics.png',
+    lessonImage: '/assets/mechanics-diagram.png', // optional
+    sections: [
+      { heading: 'Force', text: 'A force is a push or a pull. Forces can change an object’s speed, direction, or shape.' },
+      { heading: 'Newton’s Laws', text: 'Newton’s laws describe how forces and motion work together—like inertia and acceleration.' },
+      { heading: 'Friction', text: 'Friction is a force that resists motion when surfaces rub together.' },
+    ],
+  },
 }
 
-const module = computed(() => MODULES[moduleId.value] || MODULES['water-cycle'])
+const module = computed(() => MODULES[moduleId.value])
 
 const bannerStyle = computed(() => ({
   backgroundImage: `url(${module.value.heroImage})`,

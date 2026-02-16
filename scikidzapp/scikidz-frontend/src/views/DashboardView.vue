@@ -70,10 +70,15 @@
   import { useRouter } from "vue-router";
 
   function openModule(lesson) {
-  // prefer moduleId/slug if present; fallback to hardcoded for testing
-  const moduleId = lesson.moduleId || lesson.slug || 'water-cycle'
-  router.push(`/modules/${moduleId}/lesson`)
+  const moduleId = lesson?.moduleId || lesson?.id || lesson?.slug
+  if (!moduleId) {
+    console.error('Missing moduleId/id for lesson:', lesson)
+    return
+  }
+
+  router.push({ name: 'Lesson', params: { moduleId } })
 }
+
   
   const router = useRouter();
   const menuOpen = ref(false);
@@ -83,7 +88,6 @@
   };
   
   const goToProfile = () => {
-    ß
     alert("Profile screen not implemented yet.");
   };
   

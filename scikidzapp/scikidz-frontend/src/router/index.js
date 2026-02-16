@@ -15,17 +15,65 @@ import QuizView from '../views/QuizView.vue'
 import QuizResultsView from '../views/QuizResultsView.vue'
 
 const routes = [
-  { path: '/', redirect: '/login' },
-  { path: '/login', name: 'Login', component: LoginView, meta: { showMenu: false } },
-  { path: '/register', name: 'Register1', component: Register1View, meta: { showMenu: false } },
-  { path: '/register/step2', name: 'Register2', component: Register2View, meta: { showMenu: false } },
-  { path: '/register/step3', name: 'Register3', component: Register3View, meta: { showMenu: false } },
-  { path: '/dashboard', name: 'Dashboard', component: DashboardView, meta: { showMenu: true } },
-  { path: '/modules/:moduleId/lesson', name: 'Lesson', component: LessonView, meta: { showMenu: false } },
-  { path: '/modules/:moduleId/ar', name: 'AR', component: ARView, meta: { showMenu: false } },
-  { path: '/modules/:moduleId/recap', name: 'Recap', component: RecapView, meta: { showMenu: false } },
-  { path: '/modules/:moduleId/quiz', name: 'ModuleQuiz', component: QuizView, meta: {showMenu: false}},
-  { path: '/modules/:moduleId/results', name: 'ModuleResults', component: () => import('../views/QuizResultsView.vue'), meta: { showMenu: false }},
+  {
+    path: '/',
+    redirect: '/login'
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: LoginView,
+    meta: { showMenu: false }
+  },
+  {
+     path: '/register',
+    name: 'Register1', 
+    component: Register1View, 
+    meta: { showMenu: false }
+  },
+  {
+    path: '/register/step2',
+    name: 'Register2',
+    component: Register2View,
+    meta: { showMenu: false }
+  },
+  {
+    path: '/register/step3', 
+    name: 'Register3',
+    component: Register3View,
+    meta: { showMenu: false } 
+  },
+  { path: '/dashboard',
+    name: 'Dashboard',
+    component: DashboardView, 
+    meta: { showMenu: true } 
+  },
+  {
+    path: '/modules/:moduleId/lesson',
+    name: 'Lesson',
+    component: LessonView,
+    meta: { showMenu: false } 
+  },
+  { path: '/modules/:moduleId/ar',
+    name: 'AR', 
+    component: ARView, 
+    meta: { showMenu: false } 
+  },
+  { path: '/modules/:moduleId/recap', 
+    name: 'Recap',
+    component: RecapView, 
+    meta: { showMenu: false } 
+  },
+  { path: '/modules/:moduleId/quiz',
+    name: 'ModuleQuiz', 
+    component: QuizView, 
+    meta: {showMenu: false}
+  },
+  { path: '/modules/:moduleId/results', 
+    name: 'ModuleResults', 
+    component: () => import('../views/QuizResultsView.vue'),
+    meta: { showMenu: false }
+  },
 ]
 
 const router = createRouter({

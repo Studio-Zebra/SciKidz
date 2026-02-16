@@ -68,13 +68,27 @@
   </template>
   
   <script setup>
-  import { nextTick, ref } from 'vue'
+  import { computed, nextTick, ref } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import AppViewport from '../components/AppViewport.vue'
+  import { getModule } from '../content/modules' 
   
   const router = useRouter()
   const route = useRoute()
-  const moduleId = String(route.params.moduleId || 'water-cycle')
+  
+  const moduleId = computed(() => String(route.params.moduleId || 'water-cycle'))
+  const module = computed(() => getModule(moduleId.value))
+  
+  // Fallback so AR view doesn’t crash if moduleId is wrong
+  const ar = computed(() => module.value?.ar ?? {
+    title: 'Gestures',
+    text:
+      'Use one finger to interact with objects. Tap on an object to get more information. Use two fingers to pan around the environment.',
+    gestures: [
+      { icon: '/assets/interact.png', alt: 'Tap to interact', label: 'Interact' },
+      { icon: '/assets/panenvironment.png', alt: 'Use two fingers to pan', label: 'Pan Environment' },
+    ],
+  })
   
   const isInstructionsOpen = ref(false)
   const sheetRoot = ref(null)
@@ -84,7 +98,7 @@
   }
   
   function done() {
-    router.push(`/modules/${moduleId}/recap`)
+    router.push({ name: 'Recap', params: { moduleId: moduleId.value } })
   }
   
   async function openInstructions() {
@@ -97,6 +111,7 @@
     isInstructionsOpen.value = false
   }
   </script>
+  
   
   <style scoped>
   /* IMPORTANT: now the viewport wrapper controls the gray surround + sizing */
