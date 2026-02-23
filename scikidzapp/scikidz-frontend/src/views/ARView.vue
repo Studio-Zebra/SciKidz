@@ -2,7 +2,8 @@
     <AppViewport :graySurround="true">
       <div class="ar-view">
         <div class="ar-bg" aria-hidden="true">
-          <div class="ar-center-text">
+  <component :is="experienceComponent" />
+  <div class="ar-center-text">
             <div class="ar-center-title">AR</div>
             <div class="ar-center-subtitle">
               Experience<br />
@@ -68,17 +69,30 @@
   </template>
   
   <script setup>
-  import { computed, nextTick, ref } from 'vue'
-  import { useRoute, useRouter } from 'vue-router'
-  import AppViewport from '../components/AppViewport.vue'
-  import { getModule } from '../content/modules' 
+import { computed, nextTick, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import AppViewport from '../components/AppViewport.vue'
+import { getModule } from '../content/modules' 
+import WaterCycleExperience from '../components/ar/WaterCycleExperience.vue'
+import AtomsMoleculesExperience from '../components/ar/AtomsMoleculesExperience.vue'
+import BasicMechanicsExperience from '../components/ar/BasicMechanicsExperience.vue'
   
   const router = useRouter()
   const route = useRoute()
+
+  const experienceComponent = computed(() => {
+  const map = {
+    'water-cycle': WaterCycleExperience,
+    'atoms-molecules': AtomsMoleculesExperience,
+    'basic-mechanics': BasicMechanicsExperience,
+  }
+  return map[moduleId.value] || WaterCycleExperience
+})
+
   
   const moduleId = computed(() => String(route.params.moduleId || 'water-cycle'))
   const module = computed(() => getModule(moduleId.value))
-  
+
   // Fallback so AR view doesn’t crash if moduleId is wrong
   const ar = computed(() => module.value?.ar ?? {
     title: 'Gestures',
