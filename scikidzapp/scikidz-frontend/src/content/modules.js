@@ -2,13 +2,14 @@ export const modules = {
   "water-cycle": {
     title: "The Water Cycle",
     heroImage: "/assets/lesson-watercycle.png",
-    ar: {
-      title: "Gestures",
-      text:
-        "Use one finger to interact with water elements. Tap clouds or rain to see the water cycle in action. Use two fingers to pan around.",
-      gestures: [
-        { icon: "/assets/interact.png", alt: "Tap to interact", label: "Interact" },
-        { icon: "/assets/panenvironment.png", alt: "Use two fingers to pan", label: "Pan Environment" }
+    recap: {
+      title: "Water Cycle Recap",
+      bullets: [
+        "The water cycle is the continuous movement of water on Earth.",
+        "Evaporation turns liquid water into water vapor.",
+        "Condensation forms clouds from cooled water vapor.",
+        "Precipitation returns water to Earth as rain, snow, sleet, or hail.",
+        "Collection gathers water in rivers, lakes, oceans, and underground."
       ]
     }
   },
@@ -16,13 +17,14 @@ export const modules = {
   "atoms-molecules": {
     title: "Atoms and Molecules",
     heroImage: "/assets/lesson-atoms.png",
-    ar: {
-      title: "Gestures",
-      text:
-        "Tap atoms to learn about protons, neutrons, and electrons. Drag atoms together to form molecules. Use two fingers to pan.",
-      gestures: [
-        { icon: "/assets/interact.png", alt: "Tap to interact", label: "Interact" },
-        { icon: "/assets/panenvironment.png", alt: "Use two fingers to pan", label: "Pan Environment" }
+    recap: {
+      title: "Atoms & Molecules Recap",
+      bullets: [
+        "Atoms are the basic building blocks of matter.",
+        "Protons (+) and neutrons (0) are in the nucleus.",
+        "Electrons (-) move around the nucleus.",
+        "Molecules form when atoms bond together.",
+        "Different molecules have different properties."
       ]
     }
   },
@@ -30,13 +32,14 @@ export const modules = {
   "basic-mechanics": {
     title: "Basic Mechanics",
     heroImage: "/assets/lesson-mechanics.png",
-    ar: {
-      title: "Gestures",
-      text:
-        "Tap objects to apply forces. Drag to move them. Use two fingers to pan the environment.",
-      gestures: [
-        { icon: "/assets/interact.png", alt: "Tap to interact", label: "Interact" },
-        { icon: "/assets/panenvironment.png", alt: "Use two fingers to pan", label: "Pan Environment" }
+    recap: {
+      title: "Mechanics Recap",
+      bullets: [
+        "A force is a push or pull that can change motion.",
+        "Newton’s laws describe how forces affect objects.",
+        "Friction resists motion between surfaces.",
+        "Mass and acceleration determine how an object responds to force.",
+        "Forces can change speed, direction, or shape."
       ]
     }
   }

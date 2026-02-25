@@ -40,16 +40,20 @@
             class="lesson-card"
           >
             
-            <div class="card-top" :style="{ background: lesson.ribbonColor }">
-              <div class="card-title-wrap">
-                <div class="card-title">{{ lesson.title }}</div>
-                <div class="card-grade">{{ lesson.grade }}</div>
-              </div>
-  
-              <button class="kebab" aria-label="More" @click="openLessonMenu(lesson)">
-                <span></span><span></span><span></span>
-              </button>
-            </div>
+          <div class="card-top" :style="{ background: lesson.ribbonColor }">
+  <div class="card-title">{{ lesson.title }}</div>
+
+  <button class="kebab" aria-label="More" @click="openLessonMenu(lesson)">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+
+<div
+  class="card-grade-strip"
+  :style="{ background: lesson.ribbonColor }"
+>
+  <div class="card-grade">{{ lesson.grade }}</div>
+</div>
   
             
             <div class="card-media">
@@ -225,9 +229,9 @@
   /* Colored header strip */
   .card-top {
     display: grid;
-    grid-template-columns: 1fr 40px;
-    align-items: start;
-    padding: 10px 10px 8px;
+  grid-template-columns: 1fr 40px;
+  align-items: center;
+  padding: 10px 10px;
   }
   
   .card-title {
@@ -237,13 +241,20 @@
     line-height: 1.1;
     text-shadow: 0 1px 0 rgba(0,0,0,0.1);
   }
+
+  .card-grade-strip {
+  padding: 6px 10px;
+  background: inherit;
+  opacity: 0.75; /* makes it slightly lighter */
+}
+
+
   .card-grade {
-    margin-top: 4px;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.6px;
-    color: rgba(255,255,255,0.95);
-  }
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #ffffff;
+}
   
   /* Kebab menu */
   .kebab {
