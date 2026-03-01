@@ -1,119 +1,90 @@
 <!-- src/views/QuizView.vue -->
 <script setup>
-import { reactive, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { reactive, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AppViewport from '../components/AppViewport.vue'
+import { getQuiz } from '../content/quizzes'
 
+const route = useRoute()
 const router = useRouter()
 
-// Module key used for progress tracking (matches your Water Cycle flow)
-const MODULE_KEY = 'water-cycle'
+const moduleId = computed(() => String(route.params.moduleId || 'water-cycle'))
+const questions = computed(() => getQuiz(moduleId.value) || [])
 
-// 5-question quiz
-const questions = [
-  {
-    id: 1,
-    prompt: 'How many main stages does the water cycle commonly include?',
-    options: ['2', '3', '4', '5'],
-    correctIndex: 2, // 4
-  },
-  {
-    id: 2,
-    prompt: 'Which of the following is a real part of the water cycle?',
-    options: ['Evaporation', 'Transportation', 'Geo-location', 'Motivation'],
-    correctIndex: 0,
-  },
-  {
-    id: 3,
-    prompt: 'What is condensation?',
-    options: [
-      'Water vapor cooling into liquid droplets (clouds)',
-      'Liquid water warming into vapor',
-      'Water soaking into the ground',
-      'Water freezing into ice instantly',
-    ],
-    correctIndex: 0,
-  },
-  {
-    id: 4,
-    prompt: 'What is precipitation?',
-    options: [
-      'Water gathering in oceans and lakes',
-      'Water falling from clouds as rain, snow, sleet, or hail',
-      'Water vapor rising from plants only',
-      'Wind moving clouds across the sky',
-    ],
-    correctIndex: 1,
-  },
-  {
-    id: 5,
-    prompt: 'Which process is driven by the Sun’s energy?',
-    options: ['Collection', 'Evaporation', 'Precipitation', 'Condensation'],
-    correctIndex: 1,
-  },
-]
-
-// answers[qIndex] = selected option index (number) or null
 const state = reactive({
-  answers: Array(questions.length).fill(null),
+  answers: [],
   error: '',
 })
 
+// reset answers when module changes (or when entering the page)
+watch(
+  questions,
+  (qs) => {
+    state.answers = Array(qs.length).fill(null)
+    state.error = ''
+  },
+  { immediate: true }
+)
+
+watch(
+  questions,
+  () => resetQuiz(),
+  { immediate: true }
+)
+
 const answeredCount = computed(() => state.answers.filter(v => v !== null).length)
 
-function calculateScorePercent() {
-  let correct = 0
-  for (let i = 0; i < questions.length; i++) {
-    if (state.answers[i] === questions[i].correctIndex) correct++
-  }
-  // percent as integer (0..100)
-  return Math.round((correct / questions.length) * 100)
+function resetQuiz() {
+  state.answers = Array(questions.value.length).fill(null)
+  state.error = ''
+
+  // optional: scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 function saveModuleProgress(percent) {
-  // Store all module progress in a single object in localStorage
-  // { "water-cycle": 80, "some-other-module": 40 }
-  const key = 'scikidzModuleProgress'
+  const storageKey = 'scikidzModuleProgress'
+  const moduleKey = moduleId.value
+
   let progress = {}
   try {
-    progress = JSON.parse(localStorage.getItem(key) || '{}')
+    progress = JSON.parse(localStorage.getItem(storageKey) || '{}')
   } catch {
     progress = {}
   }
 
-  // Save best attempt (never decrease progress unless you want it to)
-  const prev = typeof progress[MODULE_KEY] === 'number' ? progress[MODULE_KEY] : 0
-  progress[MODULE_KEY] = Math.max(prev, percent)
-
-  localStorage.setItem(key, JSON.stringify(progress))
+  const prev = typeof progress[moduleKey] === 'number' ? progress[moduleKey] : 0
+  progress[moduleKey] = Math.max(prev, percent)
+  localStorage.setItem(storageKey, JSON.stringify(progress))
 }
 
 function submitQuiz() {
   state.error = ''
 
-  if (answeredCount.value !== questions.length) {
+  if (questions.value.length === 0) {
+    state.error = 'Quiz coming soon for this module.'
+    return
+  }
+
+  if (answeredCount.value !== questions.value.length) {
     state.error = 'Please answer all questions before submitting.'
     return
   }
 
-  // compute score and correct count
   let correctCount = 0
-  for (let i = 0; i < questions.length; i++) {
-    if (state.answers[i] === questions[i].correctIndex) correctCount++
+  for (let i = 0; i < questions.value.length; i++) {
+    if (state.answers[i] === questions.value[i].correctIndex) correctCount++
   }
-  const percent = Math.round((correctCount / questions.length) * 100)
 
-  // store module completion (percent)
+  const percent = Math.round((correctCount / questions.value.length) * 100)
   saveModuleProgress(percent)
 
-  // navigate to results
   router.push({
     name: 'ModuleResults',
-    params: { moduleId: MODULE_KEY },
-    query: { score: percent, correct: correctCount, total: questions.length },
+    params: { moduleId: moduleId.value },
+    query: { score: percent, correct: correctCount, total: questions.value.length },
   })
 }
-
 </script>
 
 <template>

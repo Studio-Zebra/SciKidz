@@ -65,8 +65,8 @@ const routes = [
     meta: { showMenu: false } 
   },
   { path: '/modules/:moduleId/quiz',
-    name: 'ModuleQuiz', 
-    component: QuizView, 
+    name: 'Quiz', 
+    component: () => import('../views/QuizView.vue'), 
     meta: {showMenu: false}
   },
   { path: '/modules/:moduleId/results', 

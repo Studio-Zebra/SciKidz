@@ -66,10 +66,7 @@ function goHome() {
 }
 
 function takeQuiz() {
-  // If you already have a quiz route, keep moduleId:
-  // router.push({ name: 'Quiz', params: { moduleId: moduleId.value } })
-
-  alert('Quiz not implemented yet.')
+  router.push({ name: 'Quiz', params: { moduleId: moduleId.value } })
 }
 </script>
 

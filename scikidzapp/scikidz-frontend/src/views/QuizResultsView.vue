@@ -55,7 +55,7 @@ function goHome() {
 }
 
 function restartQuiz() {
-  router.push({ name: 'ModuleQuiz', params: { moduleId: moduleId.value } })
+  router.push({ name: 'Quiz', params: { moduleId: moduleId.value } })
 }
 </script>
 

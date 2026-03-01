@@ -87,7 +87,7 @@ const MODULES = {
     description:
       'Everything you can touch is made of matter—and matter is made of atoms. Atoms can join together in different ways to form molecules, which make up substances like water, air, and even you.',
     heroImage: '/assets/lesson-atoms.png',
-    lessonImage: '/assets/atoms-diagram.png', // add this asset or remove this line for now
+    lessonImage: '/assets/atoms-diagram.png', 
     sections: [
       {
         heading: 'What is an Atom?',
