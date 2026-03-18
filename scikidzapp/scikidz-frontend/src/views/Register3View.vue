@@ -1,95 +1,97 @@
 <template>
-    <div class="register-wrapper">
-      <!-- Back Button -->
-      <button class="back-btn" @click="goBack">←</button>
-  
-      <h1 class="title">Security</h1>
-  
-      <label class="label">Password</label>
-      <ul class="guidelines">
-        <li>7 Characters Minimum (24 Max)</li>
-        <li>1 Letter, 1 number, 1 special character</li>
-      </ul>
-  
-      <input
-        v-model="password"
-        type="password"
-        class="input-field"
-      />
-      <p v-if="password && !validPasswordLength()" class="error-text">
-  Password must be 7–24 characters long.
-</p>
+  <div class="register-wrapper">
+    <!-- Back Button -->
+    <button class="back-btn" @click="goBack">←</button>
 
-<p v-if="password && !validPasswordLetter()" class="error-text">
-  Must include at least one letter.
-</p>
+    <h1 class="title">Security</h1>
 
-<p v-if="password && !validPasswordNumber()" class="error-text">
-  Must include at least one number.
-</p>
+    <label class="label">Password</label>
+    <ul class="guidelines">
+      <li>7 Characters Minimum (24 Max)</li>
+      <li>1 Letter, 1 number, 1 special character</li>
+    </ul>
 
-<p v-if="password && !validPasswordSpecial()" class="error-text">
-  Must include at least one special character.
-</p>
+    <input v-model="password" type="password" class="input-field" />
 
-      <button
-  class="signup-btn"
-  :disabled="!isValidPassword()"
-  @click="signUp"
->
-  Sign Up
-</button>
-    </div>
-  </template>
-  
-  <script setup>
-  import { ref } from 'vue'
-  import { useRouter, useRoute } from 'vue-router'
-  import api from '../services/axios'
-  
-  const router = useRouter()
-  const route = useRoute()
-  
-  const email = route.query.email
-  const username = route.query.username
-  const firstName = route.query.firstName
-  const lastName = route.query.lastName
+    <p v-if="password && !validPasswordLength()" class="error-text">
+      Password must be 7–24 characters long.
+    </p>
 
-  const validPasswordLength = () =>
-  password.value.length >= 7 && password.value.length <= 24;
+    <p v-if="password && !validPasswordLetter()" class="error-text">
+      Must include at least one letter.
+    </p>
 
-  const validPasswordLetter = () => /[A-Za-z]/.test(password.value);
-    const validPasswordNumber = () => /\d/.test(password.value);
-    const validPasswordSpecial = () =>
-  /[!@#$%^&*(),.?":{}|<>]/.test(password.value);
+    <p v-if="password && !validPasswordNumber()" class="error-text">
+      Must include at least one number.
+    </p>
 
-    const isValidPassword = () =>
+    <p v-if="password && !validPasswordSpecial()" class="error-text">
+      Must include at least one special character.
+    </p>
+
+    <button class="signup-btn" :disabled="!isValidPassword()" @click="signUp">
+      Sign Up
+    </button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import api from '../services/axios'
+
+const router = useRouter()
+const route = useRoute()
+
+const email = route.query.email || ''
+const username = route.query.username || ''
+const firstName = route.query.firstName || ''
+const lastName = route.query.lastName || ''
+
+const password = ref('')
+
+// --- Password validation (function style since template uses () ) ---
+const validPasswordLength = () =>
+  password.value.length >= 7 && password.value.length <= 24
+
+const validPasswordLetter = () => /[A-Za-z]/.test(password.value)
+const validPasswordNumber = () => /\d/.test(password.value)
+const validPasswordSpecial = () =>
+  /[!@#$%^&*(),.?":{}|<>]/.test(password.value)
+
+const isValidPassword = () =>
   validPasswordLength() &&
   validPasswordLetter() &&
   validPasswordNumber() &&
-  validPasswordSpecial();
+  validPasswordSpecial()
 
+const signUp = async () => {
+  if (!isValidPassword()) return
 
-
-  
-  const password = ref('')
-  
-  const signUp = async () => {
-    const payload = {
-      email,
-      username,
-      firstName,
-      lastName,
-      password: password.value
-    }
-  
-    await api.post('/auth/register', payload)
-    router.push('/login')
+  const payload = {
+    email,
+    username,
+    firstName,
+    lastName,
+    password: password.value,
   }
-  
-  const goBack = () => router.push({ name: 'Register2' })
-  </script>
-  
-  <style scoped>
-  @import '../styles/register.css';
-  </style>
+
+  try {
+    const res = await api.post('/auth/register', payload)
+
+    localStorage.setItem('token', res.data.token)
+    localStorage.setItem('user', JSON.stringify(res.data.user))
+
+    router.push('/dashboard')
+  } catch (err) {
+    console.error('Registration failed:', err?.response?.data || err)
+    alert(err?.response?.data?.error || 'Registration failed.')
+  }
+}
+
+const goBack = () => router.push({ name: 'Register2' })
+</script>
+
+<style scoped>
+@import '../styles/register.css';
+</style>

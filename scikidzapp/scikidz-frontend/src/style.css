@@ -1,16 +1,26 @@
+/* src/style.css
+   Cleaned up from Vite starter styles to support a full-screen app UI (SciKidz)
+*/
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  --app-font: system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  font-family: var(--app-font);
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+
+  color-scheme: light;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+
+  color: #213547;
+  background-color: #ffffff;
 }
 
 a {
@@ -22,58 +32,232 @@ a:hover {
   color: #535bf2;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+#app {
+  width: 100%;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
+
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
-  transition: border-color 0.25s;
 }
-button:hover {
-  border-color: #646cff;
-}
+
 button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button:focus-visible,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 3px solid rgba(100, 108, 255, 0.45);
+  outline-offset: 2px;
+}
+
+
+input,
+textarea,
+select {
+  border: none;
+  outline: none;
 }
 
 .card {
   padding: 2em;
 }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.sk-menu-root {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.sk-menu-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.sk-menu-panel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: min(320px, 86vw);
+  background: #f3f5f7;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(0,0,0,0.08);
+}
+
+.sk-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 10px;
+}
+
+.sk-menu-title {
+  font-weight: 700;
+  font-size: 18px;
+  color: #2b2f33;
+}
+
+.sk-menu-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.sk-menu-profile {
+  display: flex;
+  gap: 12px;
+  padding: 10px 14px 12px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  background: #eef2f6;
+}
+
+.sk-menu-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: #d9e6ff;
+  color: #1a3a7a;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+
+.sk-menu-profile-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.1;
+}
+
+.sk-menu-name {
+  font-weight: 800;
+  color: #2b2f33;
+}
+
+.sk-menu-username {
+  font-size: 12px;
+  color: rgba(0,0,0,0.55);
+  margin-top: 4px;
+}
+
+.sk-menu-nav {
+  padding: 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.sk-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: #2b2f33;
+}
+
+.sk-menu-item:hover {
+  background: rgba(255,255,255,0.8);
+  border-color: rgba(0,0,0,0.08);
+}
+
+.sk-menu-item-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sk-menu-item-icon {
+  width: 22px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.sk-menu-chevron {
+  color: rgba(0,0,0,0.45);
+  font-size: 18px;
+}
+
+.sk-menu-footer {
+  padding: 12px 14px 14px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sk-menu-logout {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: #4bb3f0;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sk-menu-logout:hover {
+  filter: brightness(0.96);
+}
+
+/* Hamburger */
+.sk-hamburger {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.85);
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.sk-hamburger-bar {
+  height: 2px;
+  width: 100%;
+  background: rgba(0,0,0,0.75);
+  border-radius: 999px;
 }

@@ -10,7 +10,7 @@
       <input
         v-model="email"
         type="email"
-        placeholder="Enter your email"
+        placeholder="Please enter your email"
         class="input-field"
       />
    <p v-if="email && !isValidEmail()" class="error-text">

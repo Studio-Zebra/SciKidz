@@ -14,82 +14,103 @@ const createToken = ( user ) => {
 };
 
 router.post('/register', async (req, res) => {
-    try {
-       console.log('Incoming registration payload:', req.body); 
-       
-        const {name, email, password} = req.body;
+  try {
+    console.log('Incoming registration payload:', req.body);
 
-    if (!name || !email || !password) {
-        return res.status(400).json({ error: 'Name, email, and password are required.'});
-    } 
+    const { username, firstName, lastName, email, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-        return res.status(409).json({ error: 'Email already in use.' });
+    if (!username || !firstName || !lastName || !email || !password) {
+      return res.status(400).json({ error: 'All fields are required.' });
+    }
+
+    const existingEmail = await User.findOne({ email });
+    const existingUsername = await User.findOne({ username });
+
+    if (existingEmail) {
+      return res.status(409).json({ error: 'Email already in use.' });
+    }
+
+    if (existingUsername) {
+      return res.status(409).json({ error: 'Username already in use.' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-        name,
-        email,
-        passwordHash,
+      username,
+      firstName,
+      lastName,
+      email,
+      passwordHash,
     });
-    
+
     const token = jwt.sign(
-        { id: user._id, email: user.email, role:  user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+      { id: user._id, email: user.email, },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
 
     res.status(201).json({
-        token,
-        user: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-        },
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
     });
-} catch (err) {
+
+  } catch (err) {
     console.error('Registration error', err);
-    res.status(500).json({ error: 'Server error during registration.'});
-}
+    res.status(500).json({ error: 'Server error during registration.' });
+  }
 });
 
 
 
 router.post('/login', async (req, res) => {
-    try {
-      const { email, password } = req.body;
-  
-      if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required.' });
-      }
-  
-      const user = await User.findOne({ email });
-      if (!user) {
-        return res.status(401).json({ error: 'Invalid credentials.' });
-      }
-  
-      const isMatch = await bcrypt.compare(password, user.passwordHash);
-      if (!isMatch) {
-        return res.status(401).json({ error: 'Invalid credentials.' });
-      }
-  
-      const token = createToken(user);
-  
-      res.json({
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-        },
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Server error during login.' });
+  try {
+    const { identifier, password } = req.body;
+
+    if (!identifier || !password) {
+      return res.status(400).json({ error: 'Identifier and password are required.' });
     }
-  });
+
+    const cleanIdentifier = String(identifier).trim();
+    const cleanEmail = cleanIdentifier.toLowerCase();
+
+    // Search by email OR username
+    const user = await User.findOne({
+      $or: [{ email: cleanEmail }, { username: cleanIdentifier }]
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid username/email or password.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid username/email or password.' });
+    }
+
+    const token = createToken(user);
+
+    return res.json({
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error during login.' });
+  }
+});
 
 export default router;
