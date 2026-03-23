@@ -13,6 +13,11 @@ import ARView from '../views/ARView.vue'
 import RecapView from '../views/RecapView.vue'
 import QuizView from '../views/QuizView.vue'
 import QuizResultsView from '../views/QuizResultsView.vue'
+//Settings view
+import AccountSettingsView from '../views/AccountSettingsView.vue'
+//Progress Tracker View
+import ProgressTrackerView from '../views/ProgressTrackerView.vue'
+import Progress from '../../../backend/models/Progress'
 
 const routes = [
   {
@@ -74,6 +79,15 @@ const routes = [
     component: () => import('../views/QuizResultsView.vue'),
     meta: { showMenu: false }
   },
+  { path: '/progress',
+    name: 'progress',
+    component: ProgressTrackerView,
+  },
+  { path: '/account',
+    name: 'account',
+    component: AccountSettingsView
+  }
+
 ]
 
 const router = createRouter({
