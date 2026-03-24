@@ -13,11 +13,14 @@ import ARView from '../views/ARView.vue'
 import RecapView from '../views/RecapView.vue'
 import QuizView from '../views/QuizView.vue'
 import QuizResultsView from '../views/QuizResultsView.vue'
-//Settings view
+//Settings views
 import AccountSettingsView from '../views/AccountSettingsView.vue'
+import BasicInfoConfig from '../views/BasicInfoConfig.vue'
+import PasswordConfig from '../views/PasswordConfig.vue'
+import AccountDeletion from '../views/AccountDeletion.vue'
 //Progress Tracker View
 import ProgressTrackerView from '../views/ProgressTrackerView.vue'
-import Progress from '../../../backend/models/Progress'
+
 
 const routes = [
   {
@@ -82,10 +85,30 @@ const routes = [
   { path: '/progress',
     name: 'progress',
     component: ProgressTrackerView,
+    meta: {showMenu: true }
   },
   { path: '/account',
     name: 'account',
-    component: AccountSettingsView
+    component: AccountSettingsView,
+    meta: { showMenu : true}
+  },
+  {
+    path: '/account/basic-info',
+    name: 'BasicInfoConfig',
+    component: BasicInfoConfig,
+    meta: { showMenu: false }
+  },
+  {
+    path: '/account/password',
+    name: 'PasswordConfig',
+    component: PasswordConfig,
+    meta: { showMenu: false }
+  },
+  {
+    path: '/account/delete',
+    name: 'AccountDeletion',
+    component: AccountDeletion,
+    meta: { showMenu: false }
   }
 
 ]
