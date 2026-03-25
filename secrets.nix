@@ -13,8 +13,9 @@ let
     # Team secrets: for shared access across multiple users
     teams = {
       default = {
-        users = ["soriphoono"];
+        users = ["soriphoono" "mrcomethru"];
         secrets = [
+          "cluster-key"
         ];
       };
     };

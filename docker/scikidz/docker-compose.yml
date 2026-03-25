@@ -19,6 +19,8 @@ services:
 secrets:
   cloudflared_token:
     file: ./token.txt
+  tunnel-token:
+    file: ./cloudflared/tunnel-token.age
 configs:
   # Cloudflared
   cloudflared_config:

@@ -24,3 +24,6 @@ configs:
     file: ./configs/repos.yml
   swarm-cd_stacks:
     file: ./configs/stacks.yml
+secrets:
+  cluster-key:
+    file: ./secrets/cluster-key.age
