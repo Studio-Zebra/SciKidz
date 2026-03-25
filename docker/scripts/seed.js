@@ -1,0 +1,40 @@
+// This script is run by the MongoDB entrypoint on container startup.
+// It creates a new database and user if they don't already exist.
+
+// Switch to the target database (specified by MONGO_INITDB_DATABASE in docker-compose)
+const dbName = 'SciKidz'; // Or use process.env.PROJECT_NAME if supported in your mongosh version
+const targetDb = db.getSiblingDB(dbName);
+
+print('### Initializing database: ' + dbName + ' ###');
+
+// Ensure the database exists by creating a temporary collection and document
+targetDb.init_metadata.insertOne({
+    created_at: new Date(),
+    status: 'initialized'
+});
+
+print('### Database initialized and metadata record created. ###');
+
+// Create a new user for this database
+const userName = 'scikidz_user'; // Or use an environment variable
+const userPassword = 'password123'; // Or use an environment variable
+
+const users = targetDb.getUsers();
+const userExists = users.some(u => u.user === userName);
+
+if (!userExists) {
+    print('### Creating user: ' + userName + ' ###');
+    targetDb.createUser({
+        user: userName,
+        pwd: userPassword,
+        roles: [
+            { role: 'readWrite', db: dbName },
+            { role: 'dbAdmin', db: dbName }
+        ]
+    });
+    print('### User ' + userName + ' created successfully. ###');
+} else {
+    print('### User ' + userName + ' already exists. ###');
+}
+
+print('### Seed script execution complete. ###');

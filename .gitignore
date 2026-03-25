@@ -121,3 +121,11 @@ app.*.symbols
 
 #Node Modules
 node_modules/
+
+# Docker secrets
+docker/token.txt
+
+.direnv/
+
+result
+.pre-commit-config.yaml

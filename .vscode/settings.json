@@ -1,0 +1,44 @@
+{
+    "editor.formatOnSave": true,
+    "editor.inlineSuggest.enabled": true,
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active",
+    "search.exclude": {
+        "result": true,
+        "result-*": true,
+        ".direnv/": true
+    },
+    "files.exclude": {
+        "result": true,
+        "result-*": true,
+        ".direnv/": true,
+        ".git": true
+    },
+    "files.watcherExclude": {
+        "result": true,
+        "result-*": true,
+        ".direnv/": true
+    },
+    "[nix]": {
+        "editor.defaultFormatter": "jnoortheen.nix-ide",
+        "editor.formatOnSave": true
+    },
+    "nix.enableLanguageServer": true,
+    "nix.serverPath": "nil",
+    "nix.serverSettings": {
+        "nil": {
+            "formatting": {
+                "command": [
+                    "alejandra"
+                ]
+            },
+            "diagnostics": {
+                "ignored": [
+                    "unused_binding",
+                    "unused_parameter"
+                ]
+            }
+        }
+    },
+    "direnv.restart.automatic": true,
+}

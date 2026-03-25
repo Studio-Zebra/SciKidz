@@ -1,0 +1,5 @@
+# stacks.yaml
+scikidz:
+  repo: scikidz
+  branch: main
+  compose_file: docker/scikidz/docker-compose.yml
