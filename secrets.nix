@@ -14,7 +14,6 @@ let
       default = {
         users = ["soriphoono"];
         secrets = [
-          "server-key"
         ];
       };
     };
