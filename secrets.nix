@@ -14,6 +14,7 @@ let
       default = {
         users = ["soriphoono"];
         secrets = [
+          "server-key"
         ];
       };
     };
@@ -22,15 +23,15 @@ let
     mkSecret = name: userList: {
       name = "secrets/${name}.age";
       value = {
-        publicKeys = builtins.map (user: users.${user}) userList;
+        publicKeys = map (user: users.${user}) userList;
       };
     };
 
     # Collect secrets from teams
-    teamSecretsList = lib.concatMap (team: builtins.map (secret: mkSecret secret team.users) team.secrets) (builtins.attrValues teams);
+    teamSecretsList = lib.concatMap (team: map (secret: mkSecret secret team.users) team.secrets) (builtins.attrValues teams);
 
     # Collect per-user secrets
-    userSecretsList = builtins.map (secret: mkSecret secret userSecrets.${secret}) (builtins.attrNames userSecrets);
+    userSecretsList = map (secret: mkSecret secret userSecrets.${secret}) (builtins.attrNames userSecrets);
 
     # Shell secrets for agenix-shell (filtered by current user)
     # Fallback to soriphoono if USER is not set (e.g. in pure evaluation)
@@ -46,7 +47,7 @@ let
       # Secrets from teams the user belongs to
       (lib.concatMap (
           team:
-            builtins.map (secret: {
+            map (secret: {
               name = lib.toUpper secret;
               value.file = ./secrets/${secret}.age;
             })
@@ -54,7 +55,7 @@ let
         )
         userTeams)
       # Per-user secrets the user has access to
-      (builtins.map (secret: {
+      (map (secret: {
           name = lib.toUpper secret;
           value.file = ./secrets/${secret}.age;
         })
@@ -70,9 +71,9 @@ let
   libMinimal = {
     inherit (builtins) listToAttrs concatLists concatMap;
     mapAttrs' = f: set:
-      builtins.listToAttrs (builtins.map (n: f n set.${n}) (builtins.attrNames set));
+      builtins.listToAttrs (map (n: f n set.${n}) (builtins.attrNames set));
     filterAttrs = f: set:
-      builtins.listToAttrs (builtins.map (n: {
+      builtins.listToAttrs (map (n: {
         name = n;
         value = set.${n};
       }) (builtins.filter (n: f n set.${n}) (builtins.attrNames set)));
