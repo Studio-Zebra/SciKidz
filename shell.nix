@@ -6,6 +6,8 @@
 with pkgs;
   mkShell {
     packages = [
+      git
+
       nil
       alejandra
 
