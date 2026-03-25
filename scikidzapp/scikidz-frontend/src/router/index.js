@@ -13,6 +13,14 @@ import ARView from '../views/ARView.vue'
 import RecapView from '../views/RecapView.vue'
 import QuizView from '../views/QuizView.vue'
 import QuizResultsView from '../views/QuizResultsView.vue'
+//Settings views
+import AccountSettingsView from '../views/AccountSettingsView.vue'
+import BasicInfoConfig from '../views/BasicInfoConfig.vue'
+import PasswordConfig from '../views/PasswordConfig.vue'
+import AccountDeletion from '../views/AccountDeletion.vue'
+//Progress Tracker View
+import ProgressTrackerView from '../views/ProgressTrackerView.vue'
+
 
 const routes = [
   {
@@ -74,6 +82,35 @@ const routes = [
     component: () => import('../views/QuizResultsView.vue'),
     meta: { showMenu: false }
   },
+  { path: '/progress',
+    name: 'progress',
+    component: ProgressTrackerView,
+    meta: {showMenu: true }
+  },
+  { path: '/account',
+    name: 'account',
+    component: AccountSettingsView,
+    meta: { showMenu : true}
+  },
+  {
+    path: '/account/basic-info',
+    name: 'BasicInfoConfig',
+    component: BasicInfoConfig,
+    meta: { showMenu: false }
+  },
+  {
+    path: '/account/password',
+    name: 'PasswordConfig',
+    component: PasswordConfig,
+    meta: { showMenu: false }
+  },
+  {
+    path: '/account/delete',
+    name: 'AccountDeletion',
+    component: AccountDeletion,
+    meta: { showMenu: false }
+  }
+
 ]
 
 const router = createRouter({
