@@ -26,4 +26,4 @@ configs:
     file: ./configs/stacks.yml
 secrets:
   cluster-key:
-    file: ./secrets/cluster-key.age
+    file: ./secrets/keys.txt
