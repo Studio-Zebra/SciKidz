@@ -2,6 +2,7 @@ let
   secretsFunction = {lib, ...}: let
     users = {
       soriphoono = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEgxxFcqHVwYhY0TjbsqByOYpmWXqzlVyGzpKjqS8mO7";
+      mrcomethru = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDtPcB9LhIa4NhnXbaUHY8b9Hz2djhSGvw8x8Ve/8WEi";
     };
 
     # Per-user secrets: simple mapping of secret name -> list of users
