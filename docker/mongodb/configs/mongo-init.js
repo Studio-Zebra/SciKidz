@@ -2,6 +2,7 @@
 // It creates a new database and user if they don't already exist.
 
 // Switch to the target database (specified by MONGO_INITDB_DATABASE in docker-compose)
+const fs = require('fs');
 const dbName = process.env.MONGO_INITDB_DATABASE;
 const targetDb = db.getSiblingDB(dbName);
 
