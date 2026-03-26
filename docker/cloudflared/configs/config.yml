@@ -1,0 +1,16 @@
+originRequest:
+  connectTimeout: 30s # Top-level configuration, applies to all services unless overridden
+ingress:
+  # # Rule 1: Map a specific subdomain to a local web service on port 3000
+  # - hostname: dev.mydomain.com
+  #   service: http://localhost:3000
+  #   # You can add service-specific configurations here, e.g.,
+  #   # connectTimeout: 10s # This would override the top-level timeout for this service
+
+  # # Rule 2: Map another subdomain to a different local service on port 8000
+  # - hostname: staging.mydomain.com
+  #   service: tcp://localhost:8000
+  #   # Use tcp:// for non-http traffic
+
+  # Rule 3: Catch-all rule for any other traffic not matched by the above hostnames
+  - service: http_status:404 # Returns an HTTP 404 Not Found status for other requests

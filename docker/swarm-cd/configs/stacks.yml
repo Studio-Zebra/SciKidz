@@ -1,5 +1,5 @@
 # stacks.yaml
-scikidz:
+cloudflared:
   repo: scikidz
   branch: main
-  compose_file: docker/scikidz/docker-compose.yml
+  compose_file: docker/cloudflared/docker-compose.yml
