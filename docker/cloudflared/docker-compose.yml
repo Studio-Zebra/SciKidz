@@ -6,6 +6,8 @@ services:
       - tunnel-token
     environment:
       TUNNEL_TOKEN_FILE: "/run/secrets/tunnel-token"
+    networks:
+      - proxy
     deploy:
       restart_policy:
         condition: on-failure
