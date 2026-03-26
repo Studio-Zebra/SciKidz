@@ -28,14 +28,22 @@ services:
           - node.role == manager
   mongo-express:
     image: mongo-express
+    entrypoint: ["/bin/sh", "/configs/mongo-express-entrypoint.sh"]
     secrets:
       - mongo-database-password
       - mongo-express-password
+    configs:
+      - source: mongo-express-entrypoint
+        target: /configs/mongo-express-entrypoint.sh
+        mode: 0755
     environment:
-      ME_CONFIG_MONGODB_URL: "mongodb://scikidz_user:$$(cat /run/secrets/mongo-database-password)@mongo:27017/scikidz?authSource=scikidz"
+      MONGO_HOST: "mongo"
+      MONGO_DATABASE: "scikidz"
+      MONGO_USERNAME: "scikidz_user"
+      MONGO_DATABASE_PASSWORD_FILE: "/run/secrets/mongo-database-password"
       ME_CONFIG_BASICAUTH_ENABLED: "true"
       ME_CONFIG_BASICAUTH_USERNAME: "admin"
-      ME_CONFIG_BASICAUTH_PASSWORD: "$$(cat /run/secrets/mongo-express-password)"
+      MONGO_EXPRESS_PASSWORD_FILE: "/run/secrets/mongo-express-password"
     networks:
       - mongo
       - proxy
@@ -57,6 +65,8 @@ secrets:
 configs:
   mongo_init:
     file: ./configs/mongo-init.js
+  mongo-express-entrypoint:
+    file: ./configs/mongo-express-entrypoint.sh
 volumes:
   mongodb-data:
 networks:

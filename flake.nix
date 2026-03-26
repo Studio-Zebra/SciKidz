@@ -63,36 +63,55 @@
           };
         };
 
+        treefmt = import ./treefmt.nix {
+          inherit lib pkgs;
+        };
+
+        pre-commit = import ./pre-commit.nix {
+          inherit lib pkgs;
+        };
+
         apps = rec {
           deploy = {
             type = "app";
             program = "${pkgs.writeShellApplication {
               name = "deploy";
               runtimeInputs = with pkgs; [
+                docker
               ];
               text = ''
-                # Delete all currently active services (box is assumed to be dedicated for this cluster configuration)
-                docker stack rm swarm-cd
-
-                docker stack ls | awk 'NR > 1 {print $1}' | while read -r stack; do
-                  echo "Removing stack: $stack"
-                  docker stack rm "$stack"
-                done
+                nix run .#teardown
 
                 sleep 5 # Wait for all services to disapear
+
+                # Create required networks
+                docker network create --driver overlay --attachable proxy
 
                 # Deploy the new stack
                 docker stack deploy -c docker/swarm-cd/docker-compose.yml swarm-cd
               '';
             }}/bin/deploy";
           };
-        };
 
-        treefmt = import ./treefmt.nix {
-          inherit lib pkgs;
-        };
-        pre-commit = import ./pre-commit.nix {
-          inherit lib pkgs;
+          teardown = {
+            type = "app";
+            program = "${pkgs.writeShellApplication {
+              name = "teardown";
+              runtimeInputs = with pkgs; [
+                docker
+              ];
+              text = ''
+                docker stack rm swarm-cd
+
+                docker stack ls | awk 'NR > 1 {print $1}' | while read -r stack; do
+                  echo "Removing stack: $stack"
+                  docker stack rm "$stack"
+                done
+              '';
+            }}/bin/teardown";
+          };
+
+          default = deploy;
         };
       };
     };

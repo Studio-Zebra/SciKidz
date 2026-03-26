@@ -15,7 +15,6 @@ let
       default = {
         users = ["soriphoono" "mrcomethru"];
         secrets = [
-          "cluster-key"
         ];
       };
     };
