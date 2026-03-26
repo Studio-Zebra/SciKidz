@@ -5,7 +5,7 @@ services:
     secrets:
       - tunnel-token
     environment:
-      TUNNEL_TOKEN_FILE: "/run/secrets/tunnel-token"
+      TUNNEL_TOKEN_FILE: /run/secrets/tunnel-token
     networks:
       - proxy
     deploy:

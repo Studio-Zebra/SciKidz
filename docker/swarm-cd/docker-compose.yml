@@ -12,7 +12,7 @@ services:
         target: /app/stacks.yaml
         mode: 400
     environment:
-      SOPS_AGE_KEY_FILE: "/run/secrets/cluster-key"
+      SOPS_AGE_KEY_FILE: /run/secrets/cluster-key
     secrets:
       - cluster-key
     volumes:
