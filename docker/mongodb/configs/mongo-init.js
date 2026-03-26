@@ -2,7 +2,7 @@
 // It creates a new database and user if they don't already exist.
 
 // Switch to the target database (specified by MONGO_INITDB_DATABASE in docker-compose)
-const dbName = 'SciKidz'; // Or use process.env.PROJECT_NAME if supported in your mongosh version
+const dbName = process.env.MONGO_INITDB_DATABASE;
 const targetDb = db.getSiblingDB(dbName);
 
 print('### Initializing database: ' + dbName + ' ###');
@@ -17,10 +17,10 @@ print('### Database initialized and metadata record created. ###');
 
 // Create a new user for this database
 const userName = process.env.MONGO_INITDB_DATABASE_USERNAME;
-const userPassword = fs.readFileSync(process.env.MONGO_INITDB_DATABASE_PASSWORD_FILE, 'utf8').trim();
+const userPasswordFile = process.env.MONGO_INITDB_DATABASE_PASSWORD_FILE;
+const userPassword = fs.readFileSync(userPasswordFile, 'utf8').trim();
 
-const users = targetDb.getUsers();
-const userExists = users.some(u => u.user === userName);
+const userExists = targetDb.getUser(userName);
 
 if (!userExists) {
     print('### Creating user: ' + userName + ' ###');

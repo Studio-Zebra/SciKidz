@@ -85,7 +85,9 @@
                 sleep 5 # Wait for all services to disapear
 
                 # Create required networks
-                docker network create --driver overlay --attachable proxy
+                if ! docker network ls | grep -q proxy; then
+                  docker network create --driver overlay --attachable proxy
+                fi
 
                 # Deploy the new stack
                 docker stack deploy -c docker/swarm-cd/docker-compose.yml swarm-cd
