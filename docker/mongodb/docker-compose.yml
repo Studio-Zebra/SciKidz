@@ -7,7 +7,7 @@ services:
     configs:
       - source: mongo_init
         target: /docker-entrypoint-initdb.d/init-mongo.js
-        mode: 0755
+        mode: 755
     volumes:
       - mongodb-data:/data/db
     environment:
@@ -35,7 +35,7 @@ services:
     configs:
       - source: mongo-express-entrypoint
         target: /configs/mongo-express-entrypoint.sh
-        mode: 0755
+        mode: 755
     environment:
       ME_CONFIG_SITE_BASEURL: /db
       MONGO_HOST: mongo
@@ -43,7 +43,7 @@ services:
       MONGO_DATABASE: scikidz
       MONGO_USERNAME: scikidz_user
       MONGO_DATABASE_PASSWORD_FILE: /run/secrets/mongo-database-password
-      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_ENABLED: "true"
       ME_CONFIG_BASICAUTH_USERNAME: admin
       MONGO_EXPRESS_PASSWORD_FILE: /run/secrets/mongo-express-password
     networks:
