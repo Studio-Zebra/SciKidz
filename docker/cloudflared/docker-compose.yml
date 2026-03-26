@@ -1,25 +1,26 @@
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
-    command: tunnel --no-autoupdate run
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
     secrets:
       - tunnel-token
-    # configs:
-    #   - source: cloudflared_config
-    #     target: /etc/cloudflared/config.yml
-    #     mode: 400
+    configs:
+      - source: cloudflared_config
+        target: /etc/cloudflared/config.yml
+        mode: 400
     environment:
       - TUNNEL_TOKEN_FILE=/run/secrets/tunnel-token
     deploy:
       restart_policy:
         condition: on-failure
+      mode: replicated
+      replicas: 1
       placement:
         constraints:
           - node.role == manager
 secrets:
   tunnel-token:
     file: ./secrets/tunnel-token.txt
-
-# configs:
-#   cloudflared_config:
-#     file: ./cloudflared/config.yml
+configs:
+  cloudflared_config:
+    file: ./configs/config.yml

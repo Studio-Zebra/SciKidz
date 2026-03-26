@@ -1,0 +1,53 @@
+services:
+  mongo:
+    image: mongo:noble
+    secrets:
+      - mongo-root-password
+      - mongo-database-password
+    configs:
+      - source: mongo_init
+        target: /docker-entrypoint-initdb.d/init-mongo.js
+        mode: 0755
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo-root-password
+      MONGO_INITDB_DATABASE: scikidz
+      MONGO_INITDB_DATABASE_USERNAME: scikidz_user
+      MONGO_INITDB_DATABASE_PASSWORD_FILE: /run/secrets/mongo-database-password
+    deploy:
+      restart_policy:
+        condition: on-failure
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+  mongo-express:
+    image: mongo-express
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://admin:$$(cat /run/secrets/mongo-root-password)@mongo:27017/scikidz?authSource=admin
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: $$(cat /run/secrets/mongo-express-password)
+    deploy:
+      restart_policy:
+        condition: on-failure
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+secrets:
+  mongo-root-password:
+    file: ./secrets/mongo-root-password
+  mongo-database-password:
+    file: ./secrets/mongo-database-password
+  mongo-express-password:
+    file: ./secrets/mongo-express-password
+configs:
+  mongo_init:
+    file: ./configs/mongo-init.js
+volumes:
+  mongodb-data:

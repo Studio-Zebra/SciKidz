@@ -16,8 +16,8 @@ targetDb.init_metadata.insertOne({
 print('### Database initialized and metadata record created. ###');
 
 // Create a new user for this database
-const userName = 'scikidz_user'; // Or use an environment variable
-const userPassword = 'password123'; // Or use an environment variable
+const userName = process.env.MONGO_INITDB_DATABASE_USERNAME;
+const userPassword = fs.readFileSync(process.env.MONGO_INITDB_DATABASE_PASSWORD_FILE, 'utf8').trim();
 
 const users = targetDb.getUsers();
 const userExists = users.some(u => u.user === userName);
