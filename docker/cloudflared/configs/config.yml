@@ -2,8 +2,8 @@ originRequest:
   connectTimeout: 30s # Top-level configuration, applies to all services unless overridden
 ingress:
   # Rule 1: Map a specific subdomain to a local web service on port 3000
-  - hostname: scikidz.mydomain.com
-    service: http://localhost:3000
+  - hostname: scikidz.cryptic-coders.net/db
+    service: http://mongo-express:8081
     # You can add service-specific configurations here, e.g.,
     # connectTimeout: 10s # This would override the top-level timeout for this service
   # Rule 3: Catch-all rule for any other traffic not matched by the above hostnames
