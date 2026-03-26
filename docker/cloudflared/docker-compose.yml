@@ -9,7 +9,7 @@ services:
         target: /etc/cloudflared/config.yml
         mode: 0444
     environment:
-      - TUNNEL_TOKEN_FILE=/run/secrets/tunnel-token
+      TUNNEL_TOKEN_FILE: "/run/secrets/tunnel-token"
     deploy:
       restart_policy:
         condition: on-failure
@@ -24,3 +24,6 @@ secrets:
 configs:
   cloudflared_config:
     file: ./configs/config.yml
+networks:
+  proxy:
+    external: true

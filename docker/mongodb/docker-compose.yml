@@ -11,31 +11,39 @@ services:
     volumes:
       - mongodb-data:/data/db
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo-root-password
-      MONGO_INITDB_DATABASE: scikidz
-      MONGO_INITDB_DATABASE_USERNAME: scikidz_user
-      MONGO_INITDB_DATABASE_PASSWORD_FILE: /run/secrets/mongo-database-password
+      MONGO_INITDB_ROOT_USERNAME: "admin"
+      MONGO_INITDB_ROOT_PASSWORD_FILE: "/run/secrets/mongo-root-password"
+      MONGO_INITDB_DATABASE: "scikidz"
+      MONGO_INITDB_DATABASE_USERNAME: "scikidz_user"
+      MONGO_INITDB_DATABASE_PASSWORD_FILE: "/run/secrets/mongo-database-password"
+    networks:
+      - mongo
     deploy:
-      restart_policy:
-        condition: on-failure
       mode: replicated
       replicas: 1
+      restart_policy:
+        condition: on-failure
       placement:
         constraints:
           - node.role == manager
   mongo-express:
     image: mongo-express
+    secrets:
+      - mongo-database-password
+      - mongo-express-password
     environment:
-      ME_CONFIG_MONGODB_URL: mongodb://admin:$$(cat /run/secrets/mongo-root-password)@mongo:27017/scikidz?authSource=admin
-      ME_CONFIG_BASICAUTH_ENABLED: true
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: $$(cat /run/secrets/mongo-express-password)
+      ME_CONFIG_MONGODB_URL: "mongodb://scikidz_user:$$(cat /run/secrets/mongo-database-password)@mongo:27017/scikidz?authSource=scikidz"
+      ME_CONFIG_BASICAUTH_ENABLED: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: "admin"
+      ME_CONFIG_BASICAUTH_PASSWORD: "$$(cat /run/secrets/mongo-express-password)"
+    networks:
+      - mongo
+      - proxy
     deploy:
-      restart_policy:
-        condition: on-failure
       mode: replicated
       replicas: 1
+      restart_policy:
+        condition: on-failure
       placement:
         constraints:
           - node.role == manager
@@ -51,3 +59,9 @@ configs:
     file: ./configs/mongo-init.js
 volumes:
   mongodb-data:
+networks:
+  mongo:
+    driver: overlay
+    attachable: true
+  proxy:
+    external: true

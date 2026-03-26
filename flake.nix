@@ -63,6 +63,31 @@
           };
         };
 
+        apps = rec {
+          deploy = {
+            type = "app";
+            program = "${pkgs.writeShellApplication {
+              name = "deploy";
+              runtimeInputs = with pkgs; [
+              ];
+              text = ''
+                # Delete all currently active services (box is assumed to be dedicated for this cluster configuration)
+                docker stack rm swarm-cd
+
+                docker stack ls | awk 'NR > 1 {print $1}' | while read -r stack; do
+                  echo "Removing stack: $stack"
+                  docker stack rm "$stack"
+                done
+
+                sleep 5 # Wait for all services to disapear
+
+                # Deploy the new stack
+                docker stack deploy -c docker/swarm-cd/docker-compose.yml swarm-cd
+              '';
+            }}/bin/deploy";
+          };
+        };
+
         treefmt = import ./treefmt.nix {
           inherit lib pkgs;
         };
