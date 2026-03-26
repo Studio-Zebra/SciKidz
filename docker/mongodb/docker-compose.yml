@@ -37,7 +37,7 @@ services:
         target: /configs/mongo-express-entrypoint.sh
         mode: 0755
     environment:
-      ME_CONFIG_SITE_BASEURL: "/db"
+      ME_CONFIG_SITE_BASEURL: /db
       MONGO_HOST: "mongo"
       MONGO_DATABASE: "scikidz"
       MONGO_USERNAME: "scikidz_user"
