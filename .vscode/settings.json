@@ -41,4 +41,7 @@
         }
     },
     "direnv.restart.automatic": true,
+    "[dockercompose]": {
+        "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+    }
 }
