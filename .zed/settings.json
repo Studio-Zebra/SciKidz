@@ -1,0 +1,25 @@
+{
+  "lsp": {
+    "nixd": {
+      "settings": {
+        "nixpkgs": {
+          // Tells nixd how to evaluate standard nixpkgs.
+          // For Flakes, you can point this to your flake's inputs.
+          "expr": "import (builtins.getFlake (builtins.toString ./.)).inputs.nixpkgs { }",
+        },
+      },
+    },
+  },
+  // Optionally, map the Nix formatter to the default Zed formatting behavior
+  "languages": {
+    "Nix": {
+      "language_servers": ["nixd", "!nil"],
+      "formatter": {
+        "external": {
+          "command": "alejandra",
+          "arguments": ["--quiet", "--"],
+        },
+      },
+    },
+  },
+}
