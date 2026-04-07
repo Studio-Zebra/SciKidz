@@ -113,9 +113,17 @@
                     docker stack rm "$stack"
                   done
 
-                  docker volume rm mongodb_mongodb-data
+                  if docker volume ls | grep -q mongodb_mongodb-data; then
+                    echo "Removing volume: mongodb_mongodb-data"
+                    docker volume rm mongodb_mongodb-data
+                  fi
 
-                  docker network rm proxy
+
+                  if docker network ls | grep -q proxy; then
+                    echo "Removing network: proxy"
+
+                    docker network rm proxy
+                  fi
                 '';
               }
             }/bin/teardown";
