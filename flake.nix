@@ -106,23 +106,30 @@
                   docker
                 ];
                 text = ''
-                  docker stack rm swarm-cd
+                  STACKS="${lib.concatStringsSep
+                    " "
+                    (
+                      builtins.attrNames
+                      (builtins.readDir ./docker)
+                    )}"
 
-                  docker stack ls | awk 'NR > 1 {print $1}' | while read -r stack; do
+                  # Remove each stack
+                  echo "Removing stacks: $STACKS"
+                  for stack in $STACKS; do
                     echo "Removing stack: $stack"
                     docker stack rm "$stack"
                   done
 
-                  if docker volume ls | grep -q mongodb_mongodb-data; then
-                    echo "Removing volume: mongodb_mongodb-data"
-                    docker volume rm mongodb_mongodb-data
-                  fi
-
+                  sleep 5
 
                   if docker network ls | grep -q proxy; then
                     echo "Removing network: proxy"
-
                     docker network rm proxy
+                  fi
+
+                  if [ "$#" -eq 1 ] && [ "$1" == "--complete" ] && docker volume ls | grep -q mongodb_mongodb-data; then
+                    echo "Removing volume: mongodb_mongodb-data"
+                    docker volume rm mongodb_mongodb-data
                   fi
                 '';
               }
