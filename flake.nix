@@ -74,43 +74,51 @@
         apps = rec {
           deploy = {
             type = "app";
-            program = "${pkgs.writeShellApplication {
-              name = "deploy";
-              runtimeInputs = with pkgs; [
-                docker
-              ];
-              text = ''
-                nix run .#teardown
+            program = "${
+              pkgs.writeShellApplication {
+                name = "deploy";
+                runtimeInputs = with pkgs; [
+                  docker
+                ];
+                text = ''
+                  nix run .#teardown
 
-                sleep 5 # Wait for all services to disapear
+                  sleep 5 # Wait for all services to disapear
 
-                # Create required networks
-                if ! docker network ls | grep -q proxy; then
-                  docker network create --driver overlay --attachable proxy
-                fi
+                  # Create required networks
+                  if ! docker network ls | grep -q proxy; then
+                    docker network create --driver overlay --attachable proxy
+                  fi
 
-                # Deploy the new stack
-                docker stack deploy -c docker/swarm-cd/docker-compose.yml swarm-cd
-              '';
-            }}/bin/deploy";
+                  # Deploy the new stack
+                  docker stack deploy -c docker/swarm-cd/docker-compose.yml swarm-cd
+                '';
+              }
+            }/bin/deploy";
           };
 
           teardown = {
             type = "app";
-            program = "${pkgs.writeShellApplication {
-              name = "teardown";
-              runtimeInputs = with pkgs; [
-                docker
-              ];
-              text = ''
-                docker stack rm swarm-cd
+            program = "${
+              pkgs.writeShellApplication {
+                name = "teardown";
+                runtimeInputs = with pkgs; [
+                  docker
+                ];
+                text = ''
+                  docker stack rm swarm-cd
 
-                docker stack ls | awk 'NR > 1 {print $1}' | while read -r stack; do
-                  echo "Removing stack: $stack"
-                  docker stack rm "$stack"
-                done
-              '';
-            }}/bin/teardown";
+                  docker stack ls | awk 'NR > 1 {print $1}' | while read -r stack; do
+                    echo "Removing stack: $stack"
+                    docker stack rm "$stack"
+                  done
+
+                  docker volume rm mongodb_mongodb-data
+
+                  docker network rm proxy
+                '';
+              }
+            }/bin/teardown";
           };
 
           default = deploy;
