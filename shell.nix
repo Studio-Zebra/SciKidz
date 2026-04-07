@@ -7,6 +7,7 @@ with pkgs;
   mkShell {
     packages = [
       nixd
+      alejandra
 
       ssh-to-age
       age
