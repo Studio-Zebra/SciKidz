@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Water Cycle Explorer 3D</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #1a1a2e;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            touch-action: none;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* ── TOP BAR ── */
+        #topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px 8px;
+            background: linear-gradient(180deg, rgba(10, 20, 50, 0.85) 0%, transparent 100%);
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        #topbar h1 {
+            font-family: inherit;
+            font-size: 1.1rem;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            letter-spacing: 0.5px;
+            padding-left: 64px;
+        }
+
+        #progress {
+            display: flex;
+            gap: 6px;
+        }
+
+        .prog-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            transition: background .4s, transform .3s;
+        }
+
+        .prog-dot.lit {
+            background: #FFD600;
+            border-color: #FFD600;
+            transform: scale(1.25);
+            box-shadow: 0 0 8px #FFD600;
+        }
+
+        /* ── HINT ── */
+        #hint {
+            position: fixed;
+            bottom: 230px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.45);
+            color: #e0f7fa;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 7px 18px;
+            border-radius: 30px;
+            pointer-events: none;
+            z-index: 50;
+            animation: hintBlink 2.2s ease-in-out infinite;
+            white-space: nowrap;
+            line-height: 1.3;
+            white-space: normal;
+            text-align: center;
+            max-width: calc(100vw - 32px);
+        }
+
+        @keyframes hintBlink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.4
+            }
+        }
+
+        /* ── STEP PILLS ── */
+        #stepbar {
+            position: fixed;
+            bottom: 135px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 0 12px;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .step-pill {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 4px 11px;
+            border-radius: 20px;
+            transition: all .4s;
+            letter-spacing: 0.4px;
+        }
+
+        .step-pill.done {
+            background: rgba(255, 214, 0, 0.22);
+            border-color: #FFD600;
+            color: #FFD600;
+            box-shadow: 0 0 10px rgba(255, 214, 0, 0.3);
+        }
+
+        /* ── INFO CARD ── */
+        #infoCard {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #0d2137 0%, #0a3d62 100%);
+            border-radius: 24px 24px 0 0;
+            border-top: 3px solid rgba(100, 200, 255, 0.3);
+            padding: 20px 22px 32px;
+            z-index: 100;
+            transform: translateY(110%);
+            transition: transform .4s cubic-bezier(.22, 1, .36, 1);
+            box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #infoCard.open {
+            transform: translateY(0);
+        }
+
+        .card-handle {
+            width: 40px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 0 auto 16px;
+        }
+
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .card-emoji {
+            font-size: 2.6rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .card-meta {}
+
+        .card-step {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #4fc3f7;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .card-title {
+            font-family: inherit;
+            font-size: 1.55rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .card-text {
+            font-size: 0.88rem;
+            color: #b0cfe8;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        #cardClose {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 900;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .2s;
+        }
+
+        #cardClose:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* ── LOADING ── */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #0a1628;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            transition: opacity .6s;
+        }
+
+        #loader.fade {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-title {
+            font-family: inherit;
+            font-size: 2rem;
+            color: #4fc3f7;
+            margin-bottom: 8px;
+        }
+
+        .loader-sub {
+            color: #90caf9;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .loader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(79, 195, 247, 0.2);
+            border-top-color: #4fc3f7;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-title">Water Cycle</div>
+        <div class="loader-sub">Loading...</div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <!-- TOP BAR -->
+    <div id="topbar">
+        <h1>💧 Water Cycle Explorer</h1>
+        <div id="progress"></div>
+    </div>
+
+    <!-- STEP PILLS -->
+    <div id="stepbar"></div>
+
+    <!-- HINT -->
+    <div id="hint">👆 Tap any part of the scene to explore!</div>
+
+    <!-- INFO CARD -->
+    <div id="infoCard">
+        <div class="card-handle"></div>
+        <button id="cardClose">✕</button>
+        <div class="card-top">
+            <div class="card-emoji" id="cardEmoji">💧</div>
+            <div class="card-meta">
+                <div class="card-step" id="cardStep"></div>
+                <div class="card-title" id="cardTitle"></div>
+            </div>
+        </div>
+        <div class="card-text" id="cardText"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ═══════════════════════════════════════════
+        //  SCENE SETUP
+        // ═══════════════════════════════════════════
+        const container = document.getElementById('canvas-container');
+        const W = window.innerWidth, H = window.innerHeight;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        renderer.setSize(W, H);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
+        container.appendChild(renderer.domElement);
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb);
+        scene.fog = new THREE.Fog(0x87ceeb, 35, 80);
+
+        const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 200);
+        camera.position.set(0, 12, 22);
+        camera.lookAt(0, 0, 0);
+
+        // ═══════════════════════════════════════════
+        //  LIGHTING
+        // ═══════════════════════════════════════════
+        const ambientLight = new THREE.AmbientLight(0xffeedd, 0.6);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xfff5e0, 1.4);
+        sunLight.position.set(10, 20, 10);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.set(1024, 1024);
+        sunLight.shadow.camera.near = 0.5;
+        sunLight.shadow.camera.far = 80;
+        sunLight.shadow.camera.left = -25;
+        sunLight.shadow.camera.right = 25;
+        sunLight.shadow.camera.top = 25;
+        sunLight.shadow.camera.bottom = -25;
+        scene.add(sunLight);
+
+        const fillLight = new THREE.DirectionalLight(0xc8e8ff, 0.4);
+        fillLight.position.set(-10, 5, -5);
+        scene.add(fillLight);
+
+        // ═══════════════════════════════════════════
+        //  HELPERS
+        // ═══════════════════════════════════════════
+        function rnd(a, b) { return a + Math.random() * (b - a); }
+        function flatMat(color, opts = {}) {
+            return new THREE.MeshLambertMaterial({ color, ...opts });
+        }
+
+        function notifyParentOverlayState(isOpen) {
+            window.parent.postMessage(
+                {
+                    type: 'scikidz-ar-overlay',
+                    open: isOpen,
+                },
+                window.location.origin
+            )
+        }
+
+
+
+        // ═══════════════════════════════════════════
+        //  TERRAIN BASE
+        // ═══════════════════════════════════════════
+        // Ground plane
+        const groundGeo = new THREE.PlaneGeometry(40, 28, 20, 14);
+        const groundPos = groundGeo.attributes.position;
+        for (let i = 0; i < groundPos.count; i++) {
+            const x = groundPos.getX(i), z = groundPos.getY(i);
+            if (x < 8) groundPos.setZ(i, rnd(-0.15, 0.25));
+        }
+        groundGeo.computeVertexNormals();
+        const ground = new THREE.Mesh(groundGeo, flatMat(0x5a9e47));
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Sandy beach strip
+        const beachGeo = new THREE.PlaneGeometry(5, 28);
+        const beach = new THREE.Mesh(beachGeo, flatMat(0xe8c97a));
+        beach.rotation.x = -Math.PI / 2;
+        beach.position.set(8.5, 0.01, 0);
+        beach.receiveShadow = true;
+        scene.add(beach);
+
+        // ── OCEAN: deep base ──
+        const deepOceanGeo = new THREE.PlaneGeometry(22, 32);
+        const deepOcean = new THREE.Mesh(deepOceanGeo, flatMat(0x01579b));
+        deepOcean.rotation.x = -Math.PI / 2;
+        deepOcean.position.set(20, -0.35, 0);
+        scene.add(deepOcean);
+
+        // ── OCEAN: mid layer ──
+        const oceanGeo = new THREE.PlaneGeometry(22, 32, 20, 14);
+        // Pre-displace verts for low-poly wave look
+        const oceanVerts = oceanGeo.attributes.position;
+        const oceanOrigY = [];
+        for (let i = 0; i < oceanVerts.count; i++) {
+            const ox = oceanVerts.getX(i), oz = oceanVerts.getY(i);
+            const disp = Math.sin(ox * 0.9) * 0.18 + Math.cos(oz * 0.7) * 0.14;
+            oceanVerts.setZ(i, disp);
+            oceanOrigY.push({ x: ox, z: oz, base: disp });
+        }
+        oceanGeo.computeVertexNormals();
+        const oceanMat = new THREE.MeshLambertMaterial({ color: 0x0277bd, transparent: true, opacity: 0.9 });
+        const ocean = new THREE.Mesh(oceanGeo, oceanMat);
+        ocean.rotation.x = -Math.PI / 2;
+        ocean.position.set(20, -0.05, 0);
+        ocean.receiveShadow = true;
+        scene.add(ocean);
+
+        // ── OCEAN: bright surface shimmer layer ──
+        const shimmerGeo = new THREE.PlaneGeometry(22, 32, 16, 10);
+        const shimmerMat = new THREE.MeshLambertMaterial({ color: 0x4fc3f7, transparent: true, opacity: 0.35 });
+        const shimmer = new THREE.Mesh(shimmerGeo, shimmerMat);
+        shimmer.rotation.x = -Math.PI / 2;
+        shimmer.position.set(20, 0.08, 0);
+        scene.add(shimmer);
+
+        // ── WAVE CRESTS: low-poly ridges ──
+        const waveCrests = [];
+        for (let w = 0; w < 5; w++) {
+            const wGeo = new THREE.PlaneGeometry(22, 0.6, 18, 1);
+            const wVerts = wGeo.attributes.position;
+            for (let i = 0; i < wVerts.count; i++) {
+                const wx = wVerts.getX(i);
+                wVerts.setZ(i, Math.sin(wx * 0.8 + w) * 0.12 + rnd(-0.05, 0.05));
+            }
+            wGeo.computeVertexNormals();
+            const wMat = new THREE.MeshLambertMaterial({ color: 0xe0f7fa, transparent: true, opacity: 0.55 });
+            const wMesh = new THREE.Mesh(wGeo, wMat);
+            wMesh.rotation.x = -Math.PI / 2;
+            wMesh.position.set(20, 0.12 + w * 0.01, -10 + w * 5);
+            wMesh.userData.waveOffset = w * 1.3;
+            wMesh.userData.waveBaseZ = -10 + w * 5;
+            scene.add(wMesh);
+            waveCrests.push(wMesh);
+        }
+
+        // Shore foam strip where beach meets water
+        const foamGeo = new THREE.PlaneGeometry(1.2, 30);
+        const foamMat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.45 });
+        const foam = new THREE.Mesh(foamGeo, foamMat);
+        foam.rotation.x = -Math.PI / 2;
+        foam.position.set(10.5, 0.06, 0);
+        scene.add(foam);
+
+        // ═══════════════════════════════════════════
+        //  LOW-POLY MOUNTAINS
+        // ═══════════════════════════════════════════
+        function makeMountain(x, z, h, baseR, color, snowColor) {
+            const group = new THREE.Group();
+
+            // Main peak – cone with random vertex displacement for low-poly feel
+            const geo = new THREE.ConeGeometry(baseR, h, 7, 1);
+            const pos = geo.attributes.position;
+            for (let i = 0; i < pos.count; i++) {
+                if (pos.getY(i) < h * 0.85) {
+                    pos.setX(i, pos.getX(i) + rnd(-0.3, 0.3));
+                    pos.setZ(i, pos.getZ(i) + rnd(-0.3, 0.3));
+                }
+            }
+            geo.computeVertexNormals();
+            const mesh = new THREE.Mesh(geo, flatMat(color));
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            group.add(mesh);
+
+            // Snow cap
+            const snowGeo = new THREE.ConeGeometry(baseR * 0.38, h * 0.3, 6, 1);
+            const snowMesh = new THREE.Mesh(snowGeo, flatMat(snowColor));
+            snowMesh.position.y = h * 0.38;
+            snowMesh.castShadow = true;
+            group.add(snowMesh);
+
+            group.position.set(x, h / 2, z);
+            return group;
+        }
+
+        const mountainGroup = new THREE.Group();
+        mountainGroup.add(makeMountain(-5, -2, 7, 3.2, 0x7a8fa6, 0xeceff1));
+        mountainGroup.add(makeMountain(-2, 1, 5.5, 2.5, 0x6b7f95, 0xe8edf0));
+        mountainGroup.add(makeMountain(-8, 1, 4.5, 2.2, 0x8fa3b8, 0xf5f5f5));
+        scene.add(mountainGroup);
+
+        // ═══════════════════════════════════════════
+        //  LOW-POLY TREES
+        // ═══════════════════════════════════════════
+        function makeTree(x, z, scale = 1) {
+            const g = new THREE.Group();
+            const trunkGeo = new THREE.CylinderGeometry(0.12 * scale, 0.18 * scale, 0.7 * scale, 5);
+            const trunk = new THREE.Mesh(trunkGeo, flatMat(0x5d4037));
+            trunk.position.y = 0.35 * scale;
+            trunk.castShadow = true;
+            g.add(trunk);
+
+            const layers = [
+                { r: 0.85 * scale, h: 1.1 * scale, y: 0.9 * scale },
+                { r: 0.62 * scale, h: 0.9 * scale, y: 1.7 * scale },
+                { r: 0.38 * scale, h: 0.7 * scale, y: 2.3 * scale },
+            ];
+            const treeColors = [0x2e7d32, 0x388e3c, 0x1b5e20];
+            layers.forEach((l, i) => {
+                const geo = new THREE.ConeGeometry(l.r, l.h, 6, 1);
+                const mesh = new THREE.Mesh(geo, flatMat(treeColors[i]));
+                mesh.position.y = l.y;
+                mesh.castShadow = true;
+                g.add(mesh);
+            });
+
+            g.position.set(x, 0, z);
+            return g;
+        }
+
+        const treesGroup = new THREE.Group();
+        treesGroup.add(makeTree(2, -1, 1.1));
+        treesGroup.add(makeTree(3.5, 2, 0.9));
+        treesGroup.add(makeTree(1, 3, 1.0));
+        treesGroup.add(makeTree(5, -3, 0.85));
+        treesGroup.add(makeTree(4.5, 0.5, 1.15));
+        scene.add(treesGroup);
+
+        // ═══════════════════════════════════════════
+        //  RIVER
+        // ═══════════════════════════════════════════
+        const riverPoints = [];
+        for (let i = 0; i <= 20; i++) {
+            const t = i / 20;
+            riverPoints.push(new THREE.Vector3(
+                -3 + t * 12 + Math.sin(t * Math.PI * 2) * 0.5,
+                0.05,
+                -1 + Math.sin(t * Math.PI) * 2
+            ));
+        }
+        const riverCurve = new THREE.CatmullRomCurve3(riverPoints);
+        const riverGeo = new THREE.TubeGeometry(riverCurve, 40, 0.22, 6, false);
+        const riverMat = new THREE.MeshLambertMaterial({ color: 0x29b6f6, transparent: true, opacity: 0.85 });
+        const river = new THREE.Mesh(riverGeo, riverMat);
+        river.receiveShadow = true;
+        scene.add(river);
+
+        // ═══════════════════════════════════════════
+        //  SUN (3D glowing sphere)
+        // ═══════════════════════════════════════════
+        const sunGeo = new THREE.SphereGeometry(1.4, 10, 8);
+        const sunMat = new THREE.MeshBasicMaterial({ color: 0xFFE033 });
+        const sun3D = new THREE.Mesh(sunGeo, sunMat);
+        sun3D.position.set(14, 16, -8);
+        scene.add(sun3D);
+
+        // Sun glow halo
+        const haloGeo = new THREE.SphereGeometry(2.0, 10, 8);
+        const haloMat = new THREE.MeshBasicMaterial({ color: 0xFFD600, transparent: true, opacity: 0.25, side: THREE.BackSide });
+        const halo = new THREE.Mesh(haloGeo, haloMat);
+        sun3D.add(halo);
+
+        // ═══════════════════════════════════════════
+        //  LOW-POLY CLOUDS
+        // ═══════════════════════════════════════════
+        // Each cloud gets its own material so we can tween its color independently
+        const cloudMats = [];
+        function makeCloud(x, y, z, scale = 1) {
+            const g = new THREE.Group();
+            const mat = new THREE.MeshLambertMaterial({ color: 0xdce8f0 });
+            cloudMats.push(mat);
+            g.userData.mat = mat;
+            const configs = [
+                { r: 1.2, pos: [0, 0, 0] },
+                { r: 0.9, pos: [-1.4, -0.3, 0] },
+                { r: 0.9, pos: [1.4, -0.3, 0] },
+                { r: 0.7, pos: [-0.7, 0.5, 0] },
+                { r: 0.7, pos: [0.7, 0.5, 0] },
+                { r: 0.65, pos: [0, -0.4, 0.6] },
+                { r: 0.65, pos: [0, -0.4, -0.6] },
+            ];
+            configs.forEach(c => {
+                const geo = new THREE.DodecahedronGeometry(c.r * scale, 0);
+                const pos = geo.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    pos.setX(i, pos.getX(i) + rnd(-0.05, 0.05) * scale);
+                    pos.setY(i, pos.getY(i) + rnd(-0.05, 0.05) * scale);
+                }
+                geo.computeVertexNormals();
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(...c.pos);
+                g.add(mesh);
+            });
+            g.position.set(x, y, z);
+            g.userData.baseY = y;
+            return g;
+        }
+
+        const cloud1 = makeCloud(-6, 10, -4, 1.1);
+        const cloud2 = makeCloud(2, 11.5, -6, 0.85);
+        const cloud3 = makeCloud(8, 9.5, -2, 0.75);
+        scene.add(cloud1, cloud2, cloud3);
+
+        // Cloud storm state
+        let stormActive = false;
+        let stormProgress = 0; // 0 = clear, 1 = full storm
+        const STORM_COLOR_LIGHT = new THREE.Color(0xdce8f0);
+        const STORM_COLOR_DARK = new THREE.Color(0x4a5568);
+        const allClouds = [cloud1, cloud2, cloud3];
+
+        // ═══════════════════════════════════════════
+        //  PARTICLE SYSTEMS
+        // ═══════════════════════════════════════════
+
+        // --- RAIN ---
+        const RAIN_COUNT = 400;
+        const rainGeo = new THREE.BufferGeometry();
+        const rainPos = new Float32Array(RAIN_COUNT * 3);
+        const rainVel = new Float32Array(RAIN_COUNT);
+        for (let i = 0; i < RAIN_COUNT; i++) {
+            rainPos[i * 3] = rnd(-12, 12);
+            rainPos[i * 3 + 1] = rnd(5, 18);
+            rainPos[i * 3 + 2] = rnd(-8, 8);
+            rainVel[i] = rnd(0.12, 0.22);
+        }
+        rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+        const rainMat = new THREE.PointsMaterial({ color: 0x81d4fa, size: 0.12, transparent: true, opacity: 0.7 });
+        const rainSystem = new THREE.Points(rainGeo, rainMat);
+        rainSystem.visible = false;
+        scene.add(rainSystem);
+
+        // --- EVAPORATION (steam from ocean) ---
+        const STEAM_COUNT = 120;
+        const steamGeo = new THREE.BufferGeometry();
+        const steamPos = new Float32Array(STEAM_COUNT * 3);
+        const steamVel = new Float32Array(STEAM_COUNT * 2); // vx, vy
+        for (let i = 0; i < STEAM_COUNT; i++) {
+            steamPos[i * 3] = rnd(12, 28);
+            steamPos[i * 3 + 1] = rnd(0, 8);
+            steamPos[i * 3 + 2] = rnd(-8, 8);
+            steamVel[i * 2] = rnd(-0.01, 0.01);
+            steamVel[i * 2 + 1] = rnd(0.02, 0.06);
+        }
+        steamGeo.setAttribute('position', new THREE.BufferAttribute(steamPos, 3));
+        const steamMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.25, transparent: true, opacity: 0.4 });
+        const steamSystem = new THREE.Points(steamGeo, steamMat);
+        steamSystem.visible = false;
+        scene.add(steamSystem);
+
+        // --- SNOWMELT drops ---
+        const MELT_COUNT = 80;
+        const meltGeo = new THREE.BufferGeometry();
+        const meltPos = new Float32Array(MELT_COUNT * 3);
+        const meltVel = new Float32Array(MELT_COUNT * 2);
+        for (let i = 0; i < MELT_COUNT; i++) {
+            meltPos[i * 3] = rnd(-9, -2);
+            meltPos[i * 3 + 1] = rnd(5, 9);
+            meltPos[i * 3 + 2] = rnd(-4, 4);
+            meltVel[i * 2] = rnd(0.01, 0.03);
+            meltVel[i * 2 + 1] = rnd(0.04, 0.09);
+        }
+        meltGeo.setAttribute('position', new THREE.BufferAttribute(meltPos, 3));
+        const meltMat = new THREE.PointsMaterial({ color: 0x81d4fa, size: 0.15, transparent: true, opacity: 0.8 });
+        const meltSystem = new THREE.Points(meltGeo, meltMat);
+        meltSystem.visible = false;
+        scene.add(meltSystem);
+
+        // --- TRANSPIRATION (from trees) ---
+        const TRANSP_COUNT = 60;
+        const transpGeo = new THREE.BufferGeometry();
+        const transpPos = new Float32Array(TRANSP_COUNT * 3);
+        for (let i = 0; i < TRANSP_COUNT; i++) {
+            transpPos[i * 3] = rnd(1, 6);
+            transpPos[i * 3 + 1] = rnd(2, 4);
+            transpPos[i * 3 + 2] = rnd(-3, 4);
+        }
+        transpGeo.setAttribute('position', new THREE.BufferAttribute(transpPos, 3));
+        const transpMat = new THREE.PointsMaterial({ color: 0xa5d6a7, size: 0.18, transparent: true, opacity: 0.6 });
+        const transpSystem = new THREE.Points(transpGeo, transpMat);
+        transpSystem.visible = false;
+        scene.add(transpSystem);
+
+        // ═══════════════════════════════════════════
+        //  ORBIT CONTROLS (manual - no import needed)
+        // ═══════════════════════════════════════════
+        let isDragging = false, prevX = 0, prevY = 0;
+        let camTheta = 0.05, camPhi = 0.48, camRadius = 22;
+        const TARGET = new THREE.Vector3(0, 1, 0);
+
+        function updateCamera() {
+            camera.position.x = TARGET.x + camRadius * Math.sin(camPhi) * Math.sin(camTheta);
+            camera.position.y = TARGET.y + camRadius * Math.cos(camPhi);
+            camera.position.z = TARGET.z + camRadius * Math.sin(camPhi) * Math.cos(camTheta);
+            camera.lookAt(TARGET);
+        }
+        updateCamera();
+
+        renderer.domElement.addEventListener('pointerdown', e => {
+            isDragging = false;
+            prevX = e.clientX; prevY = e.clientY;
+            renderer.domElement.setPointerCapture(e.pointerId);
+        });
+        renderer.domElement.addEventListener('pointermove', e => {
+            const dx = e.clientX - prevX, dy = e.clientY - prevY;
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragging = true;
+            if (e.buttons > 0) {
+                camTheta -= dx * 0.008;
+                camPhi = Math.max(0.15, Math.min(1.35, camPhi + dy * 0.007));
+                updateCamera();
+                prevX = e.clientX; prevY = e.clientY;
+            }
+        });
+        renderer.domElement.addEventListener('wheel', e => {
+            camRadius = Math.max(10, Math.min(40, camRadius + e.deltaY * 0.04));
+            updateCamera();
+        }, { passive: true });
+
+        // Pinch zoom
+        let lastPinchDist = 0;
+        renderer.domElement.addEventListener('touchstart', e => {
+            if (e.touches.length === 2) {
+                lastPinchDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        }, { passive: true });
+        renderer.domElement.addEventListener('touchmove', e => {
+            if (e.touches.length === 2) {
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                camRadius = Math.max(10, Math.min(40, camRadius - (dist - lastPinchDist) * 0.06));
+                updateCamera();
+                lastPinchDist = dist;
+            }
+        }, { passive: true });
+
+        // ═══════════════════════════════════════════
+        //  RAYCASTING / CLICK DETECTION
+        // ═══════════════════════════════════════════
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // Map mesh groups to interaction keys
+        const interactMap = new Map();
+        // Sun
+        interactMap.set(sun3D, 'sun');
+        // Clouds
+        allClouds.forEach(c => c.children.forEach(m => interactMap.set(m, 'cloud')));
+        // Ocean
+        interactMap.set(ocean, 'ocean');
+        // Mountains
+        mountainGroup.traverse(m => { if (m.isMesh) interactMap.set(m, 'mountain'); });
+        // Trees
+        treesGroup.traverse(m => { if (m.isMesh) interactMap.set(m, 'tree'); });
+        // River
+        interactMap.set(river, 'river');
+
+        const allInteractable = [...interactMap.keys()];
+
+        renderer.domElement.addEventListener('pointerup', e => {
+            if (isDragging) return;
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const hits = raycaster.intersectObjects(allInteractable, false);
+            if (hits.length > 0) {
+                const key = interactMap.get(hits[0].object);
+                if (key) triggerInteraction(key);
+            }
+        });
+
+        // ═══════════════════════════════════════════
+        //  INFO CONTENT
+        // ═══════════════════════════════════════════
+        const INFO = {
+            sun: {
+                emoji: '☀️', step: 'STEP 1 · EVAPORATION',
+                title: 'The Sun Powers It All!',
+                text: 'The sun warms water in oceans, lakes, and rivers. This heat turns liquid water into an invisible gas called water vapor, which floats up into the sky. Without the sun, the water cycle would stop! 🌡️',
+                particle: 'steam', key: 'evaporation'
+            },
+            ocean: {
+                emoji: '🌊', step: 'STEP 1 · EVAPORATION SOURCE',
+                title: 'The Ocean — Earth\'s Big Water Tank!',
+                text: 'Over 96% of Earth\'s water is in the ocean! The sun heats the surface, turning water into vapor that rises into the sky. The ocean is the starting point of the entire water cycle. 🐠',
+                particle: 'steam', key: 'evaporation'
+            },
+            cloud: {
+                emoji: '⛅', step: 'STEP 2 · CONDENSATION & PRECIPITATION',
+                title: 'Clouds Form & It Rains!',
+                text: 'As water vapor rises, it cools down and turns back into tiny water droplets — this is condensation. Millions of droplets cluster together to form clouds. When clouds get too heavy, water falls as rain or snow — that\'s precipitation! 🌧️',
+                particle: 'rain', key: 'condensation'
+            },
+            mountain: {
+                emoji: '🏔️', step: 'STEP 3 · SNOWMELT & RUNOFF',
+                title: 'Mountains Hold Water as Snow!',
+                text: 'Rain and snow collect on mountaintops. In spring, the snow melts and flows downhill as runoff — filling rivers and streams. Mountains act like giant water towers, slowly releasing fresh water all year long! ❄️',
+                particle: 'melt', key: 'runoff'
+            },
+            river: {
+                emoji: '🏞️', step: 'STEP 4 · COLLECTION',
+                title: 'Rivers Carry Water Home!',
+                text: 'Rivers collect rainwater and snowmelt, carrying it across the land back toward the ocean. Some water also soaks into the ground — called groundwater — which feeds wells, springs, and plants! 🌿',
+                particle: 'none', key: 'collection'
+            },
+            tree: {
+                emoji: '🌳', step: 'STEP 5 · TRANSPIRATION',
+                title: 'Plants Breathe Water!',
+                text: 'Trees and plants absorb water through their roots and release water vapor through tiny holes in their leaves — called stomata. This is called transpiration. A single large tree can release hundreds of liters of water into the air every day! 🍃',
+                particle: 'transp', key: 'transpiration'
+            }
+        };
+
+        // ═══════════════════════════════════════════
+        //  PROGRESS SYSTEM
+        // ═══════════════════════════════════════════
+        const STEPS = ['evaporation', 'condensation', 'runoff', 'collection', 'transpiration'];
+        const LABELS = { evaporation: '☀️ Evaporation', condensation: '☁️ Condensation', runoff: '🏔️ Runoff', collection: '🏞️ Collection', transpiration: '🌳 Transpiration' };
+        const discovered = new Set();
+
+        // Build dots
+        const progressEl = document.getElementById('progress');
+        const dots = {};
+        STEPS.forEach(k => {
+            const d = document.createElement('div');
+            d.className = 'prog-dot';
+            dots[k] = d;
+            progressEl.appendChild(d);
+        });
+
+        // Build pills
+        const stepbarEl = document.getElementById('stepbar');
+        const pills = {};
+        STEPS.forEach(k => {
+            const p = document.createElement('div');
+            p.className = 'step-pill';
+            p.textContent = LABELS[k];
+            pills[k] = p;
+            stepbarEl.appendChild(p);
+        });
+
+        // ═══════════════════════════════════════════
+        //  ACTIVE PARTICLE CONTROL
+        // ═══════════════════════════════════════════
+        let activeParticle = 'none';
+        let particleTimer = 0;
+
+        const particleSystems = { steam: steamSystem, rain: rainSystem, melt: meltSystem, transp: transpSystem };
+
+        function showParticle(name, duration = 4) {
+            Object.values(particleSystems).forEach(s => s.visible = false);
+            if (name !== 'none' && particleSystems[name]) {
+                particleSystems[name].visible = true;
+                activeParticle = name;
+                particleTimer = duration * 60;
+            }
+        }
+
+        // ═══════════════════════════════════════════
+        //  INTERACTION TRIGGER
+        // ═══════════════════════════════════════════
+        let cardOpen = false;
+
+        function triggerInteraction(key) {
+            const info = INFO[key];
+            if (!info) return;
+
+            infoCard.classList.add('open')
+            notifyParentOverlayState(true)
+
+            // Show card
+            document.getElementById('cardEmoji').textContent = info.emoji;
+            document.getElementById('cardStep').textContent = info.step;
+            document.getElementById('cardTitle').textContent = info.title;
+            document.getElementById('cardText').textContent = info.text;
+            document.getElementById('infoCard').classList.add('open');
+            cardOpen = true;
+
+            // Cloud storm animation
+            if (key === 'cloud') {
+                stormActive = true;
+                // Clouds descend slightly and grow during storm
+                allClouds.forEach(c => {
+                    c.userData.stormTargetY = c.userData.baseY - 1.2;
+                });
+                // Auto-clear storm after 5s
+                clearTimeout(window._stormTimeout);
+                window._stormTimeout = setTimeout(() => {
+                    stormActive = false;
+                    allClouds.forEach(c => { c.userData.stormTargetY = null; });
+                }, 5000);
+            }
+
+            // Particles
+            showParticle(info.particle);
+
+            // Progress
+            if (!discovered.has(info.key)) {
+                discovered.add(info.key);
+                dots[info.key].classList.add('lit');
+                pills[info.key].classList.add('done');
+            }
+
+            // Hide hint
+            document.getElementById('hint').style.display = 'none';
+        }
+
+        document.getElementById('cardClose').addEventListener('click', () => {
+            document.getElementById('infoCard').classList.remove('open');
+            notifyParentOverlayState(false)
+            cardOpen = false;
+            showParticle('none');
+            // Reset storm
+            stormActive = false;
+            clearTimeout(window._stormTimeout);
+            allClouds.forEach(c => { c.userData.stormTargetY = null; });
+        });
+
+        // ═══════════════════════════════════════════
+        //  ANIMATION LOOP
+        // ═══════════════════════════════════════════
+        let tick = 0;
+        const SKY_CLEAR = new THREE.Color(0x87ceeb);
+        const SKY_STORM = new THREE.Color(0x4a5a6e);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            tick++;
+
+            // Sun bob + glow pulse
+            sun3D.position.y = 16 + Math.sin(tick * 0.018) * 0.4;
+            halo.material.opacity = 0.18 + Math.sin(tick * 0.04) * 0.1;
+            sun3D.rotation.y += 0.003;
+
+            // Cloud drift + storm handling
+            const stormTarget = stormActive ? 1 : 0;
+            stormProgress += (stormTarget - stormProgress) * 0.025;
+
+            cloud1.position.x = -6 + Math.sin(tick * 0.007) * 1.2;
+            cloud2.position.x = 2 + Math.sin(tick * 0.009 + 1) * 0.9;
+            cloud3.position.x = 8 + Math.sin(tick * 0.006 + 2) * 0.8;
+
+            // Storm: descend clouds, darken them, shift sky
+            allClouds.forEach((c, i) => {
+                const targetY = stormActive ? c.userData.baseY - 1.2 : c.userData.baseY;
+                c.position.y += (targetY - c.position.y) * 0.04;
+                // Scale up clouds slightly when storming
+                const scaleT = 1 + stormProgress * 0.15;
+                c.scale.setScalar(scaleT);
+                // Darken cloud material
+                c.userData.mat.color.lerpColors(STORM_COLOR_LIGHT, STORM_COLOR_DARK, stormProgress);
+            });
+
+            // Sky colour shift
+            scene.background.lerpColors(SKY_CLEAR, SKY_STORM, stormProgress * 0.6);
+            scene.fog.color.lerpColors(SKY_CLEAR, SKY_STORM, stormProgress * 0.6);
+
+            // Sun dims during storm
+            sunLight.intensity = 1.4 - stormProgress * 0.9;
+            ambientLight.intensity = 0.6 - stormProgress * 0.35;
+
+            // ── OCEAN WAVES ──
+            // Animate wave surface vertices
+            const ov = oceanGeo.attributes.position;
+            for (let i = 0; i < ov.count; i++) {
+                const ox = oceanOrigY[i].x, oz = oceanOrigY[i].z;
+                const wave = Math.sin(ox * 0.9 + tick * 0.04) * 0.18
+                    + Math.cos(oz * 0.7 + tick * 0.03) * 0.14
+                    + Math.sin((ox + oz) * 0.5 + tick * 0.025) * 0.08;
+                ov.setZ(i, wave);
+            }
+            ov.needsUpdate = true;
+            oceanGeo.computeVertexNormals();
+
+            // Shimmer pulse
+            shimmerMat.opacity = 0.28 + Math.sin(tick * 0.06) * 0.12;
+
+            // Animate wave crests scrolling toward shore
+            waveCrests.forEach((w, i) => {
+                let newZ = w.position.z - 0.04;
+                if (newZ < -15) newZ = 15;
+                w.position.z = newZ;
+                w.material.opacity = 0.4 + Math.sin(tick * 0.05 + w.userData.waveOffset) * 0.2;
+            });
+
+            // Shore foam flicker
+            foamMat.opacity = 0.3 + Math.sin(tick * 0.12) * 0.2;
+
+            // River shimmer
+            river.material.opacity = 0.78 + Math.sin(tick * 0.07) * 0.12;
+
+            // Particle animation timer
+            if (particleTimer > 0) {
+                particleTimer--;
+                if (particleTimer === 0) {
+                    Object.values(particleSystems).forEach(s => s.visible = false);
+                    activeParticle = 'none';
+                }
+            }
+
+            // Rain: drop down, reset — wider spread during storm
+            if (rainSystem.visible) {
+                const rp = rainGeo.attributes.position.array;
+                for (let i = 0; i < RAIN_COUNT; i++) {
+                    rp[i * 3 + 1] -= rainVel[i] * (1 + stormProgress * 0.8);
+                    if (rp[i * 3 + 1] < -0.5) {
+                        rp[i * 3] = rnd(-14, 14);
+                        rp[i * 3 + 1] = rnd(8, 15);
+                        rp[i * 3 + 2] = rnd(-10, 10);
+                    }
+                }
+                rainGeo.attributes.position.needsUpdate = true;
+                rainMat.opacity = 0.6 + stormProgress * 0.3;
+            }
+
+            // Steam: rise + drift
+            if (steamSystem.visible) {
+                const sp = steamGeo.attributes.position.array;
+                for (let i = 0; i < STEAM_COUNT; i++) {
+                    sp[i * 3] += steamVel[i * 2];
+                    sp[i * 3 + 1] += steamVel[i * 2 + 1];
+                    if (sp[i * 3 + 1] > 14) {
+                        sp[i * 3] = rnd(12, 28);
+                        sp[i * 3 + 1] = rnd(0, 1);
+                        sp[i * 3 + 2] = rnd(-8, 8);
+                    }
+                }
+                steamGeo.attributes.position.needsUpdate = true;
+                steamMat.opacity = 0.3 + Math.sin(tick * 0.05) * 0.1;
+            }
+
+            // Snowmelt: run downhill
+            if (meltSystem.visible) {
+                const mp = meltGeo.attributes.position.array;
+                for (let i = 0; i < MELT_COUNT; i++) {
+                    mp[i * 3] += meltVel[i * 2];
+                    mp[i * 3 + 1] -= meltVel[i * 2 + 1];
+                    if (mp[i * 3 + 1] < 0 || mp[i * 3] > 2) {
+                        mp[i * 3] = rnd(-9, -2);
+                        mp[i * 3 + 1] = rnd(5, 9);
+                        mp[i * 3 + 2] = rnd(-4, 4);
+                    }
+                }
+                meltGeo.attributes.position.needsUpdate = true;
+            }
+
+            // Transpiration: rise from canopy
+            if (transpSystem.visible) {
+                const tp = transpGeo.attributes.position.array;
+                for (let i = 0; i < TRANSP_COUNT; i++) {
+                    tp[i * 3 + 1] += 0.025 + Math.sin(tick * 0.03 + i) * 0.005;
+                    tp[i * 3] += Math.sin(tick * 0.02 + i) * 0.008;
+                    if (tp[i * 3 + 1] > 12) {
+                        tp[i * 3] = rnd(1, 6);
+                        tp[i * 3 + 1] = rnd(2, 4);
+                        tp[i * 3 + 2] = rnd(-3, 4);
+                    }
+                }
+                transpGeo.attributes.position.needsUpdate = true;
+                transpMat.opacity = 0.4 + Math.sin(tick * 0.04) * 0.2;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // ═══════════════════════════════════════════
+        //  RESIZE
+        // ═══════════════════════════════════════════
+        window.addEventListener('resize', () => {
+            const w = window.innerWidth, h = window.innerHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+
+        // ═══════════════════════════════════════════
+        //  START
+        // ═══════════════════════════════════════════
+        setTimeout(() => {
+            document.getElementById('loader').classList.add('fade');
+            setTimeout(() => document.getElementById('loader').remove(), 700);
+        }, 900);
+
+        animate();
+    </script>
+</body>
+
+</html>

@@ -3,20 +3,34 @@
       <div class="ar-view">
         <div class="ar-bg" aria-hidden="true">
   <component :is="experienceComponent" />
-  <div class="ar-center-text">
-            <div class="ar-center-title">AR</div>
-            <div class="ar-center-subtitle">
-              Experience<br />
-              /3D<br />
-              Simulation<br />
-              Here
-            </div>
-          </div>
         </div>
   
-        <button class="float-btn back" type="button" @click="goBack" aria-label="Go back">‹</button>
-        <button class="float-btn info" type="button" @click="openInstructions" aria-label="Open instructions">i</button>
-        <button class="done-btn" type="button" @click="done" aria-label="Done">Done</button>
+        <button
+  class="float-btn back"
+  type="button"
+  @click="goBack"
+  aria-label="Go back"
+>
+  ‹
+</button>
+<button
+  v-if="!isEmbeddedOverlayOpen"
+  class="float-btn info"
+  type="button"
+  @click="openInstructions"
+  aria-label="Open instructions"
+>
+  i
+</button>
+<button
+  v-if="!isEmbeddedOverlayOpen"
+  class="done-btn"
+  type="button"
+  @click="done"
+  aria-label="Done"
+>
+  Done
+</button>
   
         <Transition name="sheet">
           <div
@@ -69,16 +83,18 @@
   </template>
   
   <script setup>
-import { computed, nextTick, ref } from 'vue'
+
 import { useRoute, useRouter } from 'vue-router'
 import AppViewport from '../components/AppViewport.vue'
 import { getModule } from '../content/modules' 
 import WaterCycleExperience from '../components/ar/WaterCycleExperience.vue'
 import AtomsMoleculesExperience from '../components/ar/AtomsMoleculesExperience.vue'
 import BasicMechanicsExperience from '../components/ar/BasicMechanicsExperience.vue'
+import { computed, nextTick, ref, onMounted, onBeforeUnmount } from 'vue'
   
   const router = useRouter()
   const route = useRoute()
+  const isEmbeddedOverlayOpen = ref(false)
 
   const experienceComponent = computed(() => {
   const map = {
@@ -110,6 +126,22 @@ import BasicMechanicsExperience from '../components/ar/BasicMechanicsExperience.
   function goBack() {
     router.back()
   }
+
+  function handleEmbeddedMessage(event) {
+  if (event.origin !== window.location.origin) return
+
+  if (event.data?.type === 'scikidz-ar-overlay') {
+    isEmbeddedOverlayOpen.value = !!event.data.open
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('message', handleEmbeddedMessage)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('message', handleEmbeddedMessage)
+})
   
   function done() {
     router.push({ name: 'Recap', params: { moduleId: moduleId.value } })
@@ -131,8 +163,10 @@ import BasicMechanicsExperience from '../components/ar/BasicMechanicsExperience.
   /* IMPORTANT: now the viewport wrapper controls the gray surround + sizing */
   .ar-view {
     position: relative;
-    min-height: 100vh;
+    height: 100%;
+    min-height: 100%;
     background: transparent;
+    overflow: hidden;
   }
   
   .ar-bg {
@@ -170,20 +204,22 @@ import BasicMechanicsExperience from '../components/ar/BasicMechanicsExperience.
   }
   
   .float-btn {
-    position: absolute;
-    width: 48px;
-    height: 48px;
-    border-radius: 999px;
-    border: 1px solid rgba(14, 0, 106, 0.75);
-    background: rgba(255,255,255,0.88);
-    backdrop-filter: blur(6px);
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    font-size: 18px;
-    color: rgba(14, 0, 106, 0.75);
-    z-index: 5;
-  }
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid rgba(14, 0, 106, 0.75);
+
+  background: rgba(255,255,255,0.95); /* 👈 make fully opaque */
+  backdrop-filter: blur(6px);
+
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: rgba(14, 0, 106, 0.75);
+  z-index: 5;
+}
   
   .back { top: 12px; left: 12px; }
   .info { bottom: 12px; left: 12px; }
@@ -206,7 +242,7 @@ import BasicMechanicsExperience from '../components/ar/BasicMechanicsExperience.
   
   /* Overlay covers entire viewport */
   .sheet-root {
-    position: fixed;
+    position: absolute;
     inset: 0;
     z-index: 9999;
     outline: none;
@@ -295,6 +331,11 @@ import BasicMechanicsExperience from '../components/ar/BasicMechanicsExperience.
     font-size: 13px;
     color: rgba(0,0,0,0.78);
   }
+
+  .hiddenByEmbeddedOverlay {
+  opacity: 0;
+  pointer-events: none;
+}
   
   .sheet-safe-area {
     height: 10px;
