@@ -31,10 +31,14 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Optional role field
+    avatarUrl: {
+      type: String,
+      default: '',
+    },
+
     role: {
       type: String,
-      default: "user",
+      default: 'user',
     },
 
     createdAt: {
@@ -45,4 +49,4 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("User", userSchema);
+export default mongoose.model('User', userSchema);

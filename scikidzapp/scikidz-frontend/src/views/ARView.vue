@@ -48,7 +48,7 @@
             <div class="sheet">
               <div class="sheet-card">
                 <div class="sheet-header">
-                  <div class="sheet-title">Gestures</div>
+                  <div class="sheet-title">{{ ar.title }}</div>
                   <button class="float-btn sheet-close" type="button" @click="closeInstructions" aria-label="Close">
                     ˅
                   </button>
@@ -56,21 +56,31 @@
   
                 <div class="sheet-body">
                   <p class="sheet-text">
-                    Use one finger to interact with objects. Tap on an object to get more information.
-                    Use two fingers to pan around the environment.
-                  </p>
-  
-                  <div class="gesture-row">
-                    <div class="gesture">
-                      <img class="gesture-icon" src="/assets/interact.png" alt="Tap to interact" />
-                      <div class="gesture-label">Interact</div>
-                    </div>
-  
-                    <div class="gesture">
-                      <img class="gesture-icon" src="/assets/panenvironment.png" alt="Use two fingers to pan" />
-                      <div class="gesture-label">Pan Environment</div>
-                    </div>
-                  </div>
+  {{ ar.text }}
+</p>
+<div class="gesture-row">
+  <div
+    v-for="inst in ar.instructions"
+    :key="inst.type"
+    class="gesture"
+  >
+    <img
+      v-if="inst.type === 'tap'"
+      class="gesture-icon"
+      src="/assets/interact.png"
+      alt="Interact"
+    />
+    <img
+      v-else-if="inst.type === 'pan'"
+      class="gesture-icon"
+      src="/assets/panenvironment.png"
+      alt="Pan Environment"
+    />
+
+    <div class="gesture-label">{{ inst.label }}</div>
+  </div>
+</div>
+                 
                 </div>
               </div>
   
@@ -114,10 +124,10 @@ import { computed, nextTick, ref, onMounted, onBeforeUnmount } from 'vue'
     title: 'Gestures',
     text:
       'Use one finger to interact with objects. Tap on an object to get more information. Use two fingers to pan around the environment.',
-    gestures: [
-      { icon: '/assets/interact.png', alt: 'Tap to interact', label: 'Interact' },
-      { icon: '/assets/panenvironment.png', alt: 'Use two fingers to pan', label: 'Pan Environment' },
-    ],
+      instructions: [
+  { type: 'tap', label: 'Interact' },
+  { type: 'pan', label: 'Pan Environment' },
+],
   })
   
   const isInstructionsOpen = ref(false)

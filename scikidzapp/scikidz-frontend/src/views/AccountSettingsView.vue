@@ -10,18 +10,64 @@
 
       <main class="settings-content">
         <div class="profile-section">
-          <div class="avatar-wrap">
-            <img
-              v-if="user.avatarUrl"
-              :src="user.avatarUrl"
-              alt="Profile"
-              class="avatar-img"
-            />
-            <div v-else class="avatar-fallback">
-              {{ initials }}
-            </div>
-          </div>
-        </div>
+  <div class="avatar-wrap">
+    <img
+      v-if="user.avatarUrl"
+      :src="user.avatarUrl"
+      alt="Profile"
+      class="avatar-img"
+    />
+    <div v-else class="avatar-fallback">
+      {{ initials }}
+    </div>
+
+    <div v-if="showAvatarPicker" class="avatar-modal-backdrop" @click="closeAvatarPicker">
+  <div class="avatar-modal" @click.stop>
+    <h2 class="avatar-modal-title">Choose an Avatar</h2>
+
+    <div class="avatar-grid">
+      <button
+        v-for="avatar in avatarOptions"
+        :key="avatar"
+        class="avatar-option"
+        type="button"
+        @click="selectAvatar(avatar)"
+      >
+        <img :src="avatar" alt="Avatar option" class="avatar-option-img" />
+      </button>
+    </div>
+
+    <button class="avatar-close-btn" type="button" @click="closeAvatarPicker">
+      Cancel
+    </button>
+  </div>
+</div>
+
+
+    <button
+      class="avatar-edit-btn"
+      type="button"
+      @click="openAvatarPicker"
+      aria-label="Edit profile picture"
+    >
+      <svg viewBox="0 0 24 24" class="icon">
+        <path
+          d="M12 22a10 10 0 1 1 10-10 10 10 0 0 1-10 10Z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        />
+        <path
+          d="M8.5 15.5 16 8l1.5 1.5-7.5 7.5H8.5v-1.5Z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
 
         <section class="settings-group">
           <p class="group-label">Basic Info</p>
@@ -80,6 +126,18 @@ import AppViewport from '../components/AppViewport.vue'
 
 const router = useRouter()
 
+const showAvatarPicker = ref(false)
+
+const avatarOptions = [
+  '/assets/avatars/astronaut.png',
+  '/assets/avatars/scientist-girl.png',
+  '/assets/avatars/scientist-boy.png',
+  '/assets/avatars/robot.png',
+  '/assets/avatars/planet.png',
+  '/assets/avatars/dinosaur.png'
+]
+
+
 const user = ref({
   username: '',
   firstName: '',
@@ -93,6 +151,40 @@ const initials = computed(() => {
   const last = user.value.lastName?.[0] || ''
   return `${first}${last}`.toUpperCase() || '?'
 })
+
+function openAvatarPicker() {
+  showAvatarPicker.value = true
+}
+
+function closeAvatarPicker() {
+  showAvatarPicker.value = false
+}
+
+async function selectAvatar(avatarPath) {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) return
+
+    const response = await fetch('http://localhost:5757/api/users/me/avatar', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ avatarUrl: avatarPath })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to update avatar: ${response.status}`)
+    }
+
+    const updatedUser = await response.json()
+    user.value.avatarUrl = updatedUser.avatarUrl || ''
+    closeAvatarPicker()
+  } catch (error) {
+    console.error('Error updating avatar:', error)
+  }
+}
 
 function goBack() {
   router.push('/dashboard')
@@ -147,6 +239,93 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.avatar-wrap {
+  position: relative;
+  width: 84px;
+  height: 84px;
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #174a84;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #174a84;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-edit-btn .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.avatar-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.avatar-modal {
+  width: min(360px, 100%);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-modal-title {
+  margin: 0 0 1rem;
+  color: #174a84;
+  font-size: 1rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.avatar-option {
+  border: 2px solid #d9e2ec;
+  border-radius: 14px;
+  background: #f8fbff;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.avatar-option-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.avatar-close-btn {
+  margin-top: 1rem;
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  background: #174a84;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .settings-page {
   min-height: 100%;
   background: #f3f4f6;

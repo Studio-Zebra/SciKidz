@@ -26,7 +26,7 @@ router.get('/me', authMiddleware, async (req, res) => {
 // ----------------------------------
 router.put('/me', authMiddleware, async (req, res) => {
   try {
-    const { username, firstName, lastName, email } = req.body;
+    const { username, firstName, lastName, email, } = req.body;
 
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
@@ -41,6 +41,39 @@ router.put('/me', authMiddleware, async (req, res) => {
   }
 });
 
+router.put('/me/avatar', authMiddleware, async (req, res) => {
+  try {
+    const { avatarUrl } = req.body;
+
+    const allowedAvatars = [
+      '/assets/avatars/astronaut.png',
+      '/assets/avatars/scientist-girl.png',
+      '/assets/avatars/scientist-boy.png',
+      '/assets/avatars/robot.png',
+      '/assets/avatars/planet.png',
+      '/assets/avatars/dinosaur.png',
+    ];
+
+    if (!allowedAvatars.includes(avatarUrl)) {
+      return res.status(400).json({ message: 'Invalid avatar selection' });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatarUrl },
+      { new: true }
+    ).select('-passwordHash');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('PUT /me/avatar error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // ----------------------------------
 // DELETE logged-in user's account
