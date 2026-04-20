@@ -1,3 +1,4 @@
+console.log('server.js started')
 import dns from "dns";
 dns.setDefaultResultOrder("ipv4first");
 
@@ -13,10 +14,10 @@ console.log("2) dotenv loaded. MONGO_URI present?", !!process.env.MONGO_URI);
 
 const app = express();
 app.use(cors({
-    origin: 'http://localhost:5173',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }))
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
 app.use(express.json());
 
 

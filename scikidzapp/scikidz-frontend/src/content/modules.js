@@ -2,6 +2,13 @@ export const modules = {
   "water-cycle": {
     title: "The Water Cycle",
     heroImage: "/assets/lesson-watercycle.png",
+    ar: {
+      title: "How to Explore",
+      text: "Tap parts of the scene to learn about the water cycle. Use two fingers to move around the environment.",
+      instructions: [
+        { type: "pan", label: "Pan Environment" }
+      ]
+    },
     recap: {
       title: "Water Cycle Recap",
       bullets: [
@@ -17,6 +24,13 @@ export const modules = {
   "atoms-molecules": {
     title: "Atoms and Molecules",
     heroImage: "/assets/lesson-atoms.png",
+    ar: {
+      title: "How to Use This Lab",
+      text: "Tap the tabs at the top to switch between activities. Use the buttons, sliders, and atom controls to build atoms, create molecules, and explore bond types. Tap interactive particles or objects to learn more. In Molecule Builder, select an atom from the palette and tap the canvas to place it.",
+      instructions: [
+        { type: "tap", label: "Interact" }
+      ]
+    },
     recap: {
       title: "Atoms & Molecules Recap",
       bullets: [
@@ -32,6 +46,13 @@ export const modules = {
   "basic-mechanics": {
     title: "Basic Mechanics",
     heroImage: "/assets/lesson-mechanics.png",
+    ar: {
+      title: "How to Use This Lab",
+      text: "Tap the tabs at the top to switch between mechanics activities. Use the sliders and buttons at the bottom to change values like mass, angle, friction, speed, or power. Drag or launch objects in the simulation to see how motion changes. Tap Learn buttons to open explanations for each concept.",
+      instructions: [
+        { type: "tap", label: "Interact" }
+      ]
+    },
     recap: {
       title: "Mechanics Recap",
       bullets: [
@@ -42,7 +63,7 @@ export const modules = {
         "Forces can change speed, direction, or shape."
       ]
     }
-  }
+  },
 }
 
 export function getModule(moduleId) {

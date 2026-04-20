@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Basic Mechanics Lab ⚙️</title>
+    <style>
+        :root {
+            --top-safe: 68px;
+            --bottom-safe: 54px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #0d1117;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            touch-action: none;
+            color: #fff;
+        }
+
+        /* ── TABS ── */
+        #tabs {
+            position: fixed;
+            top: 0;
+            left: var(--top-safe);
+            right: 0;
+            z-index: 60;
+            display: flex;
+            background: rgba(10, 14, 26, .98);
+            border-bottom: 2px solid rgba(99, 179, 237, .15);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-right: 10px;
+        }
+
+        #tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab {
+            flex: 0 0 auto;
+            padding: 11px 13px 9px;
+            font-family: inherit;
+            font-size: .8rem;
+            color: rgba(255, 255, 255, .4);
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+            transition: all .25s;
+        }
+
+        .tab.active {
+            color: #63b3ed;
+            border-bottom-color: #63b3ed;
+        }
+
+        /* ── PANELS ── */
+        .panel {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 44px;
+            bottom: 0;
+            z-index: 10;
+            display: none;
+            overflow: hidden;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* ── SHARED CANVAS ── */
+        .sim-canvas {
+            position: absolute;
+            inset: 0;
+            display: block;
+        }
+
+        /* ── SHARED HUD BOTTOM ── */
+        .hud-bottom {
+            position: absolute;
+            bottom: var(--bottom-safe);
+            left: 0;
+            right: 0;
+            background: linear-gradient(0deg, rgba(10, 14, 26, .98) 0%, rgba(10, 14, 26, .88) 75%, transparent 100%);
+            padding: 12px 14px 20px;
+            z-index: 20;
+        }
+
+        /* ── READOUT STRIP ── */
+        .readout-strip {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .readout {
+            background: rgba(99, 179, 237, .1);
+            border: 1.5px solid rgba(99, 179, 237, .25);
+            border-radius: 10px;
+            padding: 5px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 84px;
+            /* was 70px */
+        }
+
+        .readout-label {
+            font-size: .58rem;
+            font-weight: 800;
+            color: #63b3ed;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .readout-val {
+            font-family: inherit;
+            font-size: 1.1rem;
+            color: #fff;
+            min-width: 64px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+        }
+
+        /* ── SLIDER ROW ── */
+        .slider-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .slider-group label {
+            font-size: .65rem;
+            font-weight: 800;
+            color: #94a3b8;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 120px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(99, 179, 237, .2);
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #63b3ed;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(99, 179, 237, .6);
+        }
+
+        /* ── BUTTONS ── */
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .lab-btn {
+            background: rgba(255, 255, 255, .07);
+            border: 1.5px solid rgba(255, 255, 255, .18);
+            color: #fff;
+            font-family: inherit;
+            font-size: .8rem;
+            padding: 7px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+
+        .lab-btn:hover,
+        .lab-btn:active {
+            background: rgba(99, 179, 237, .2);
+            border-color: #63b3ed;
+            color: #63b3ed;
+        }
+
+        .lab-btn.active-btn {
+            background: rgba(99, 179, 237, .25);
+            border-color: #63b3ed;
+            color: #63b3ed;
+        }
+
+        .lab-btn.red {
+            border-color: rgba(248, 113, 113, .4);
+            color: #f87171;
+        }
+
+        .lab-btn.green {
+            border-color: rgba(74, 222, 128, .4);
+            color: #4ade80;
+        }
+
+        .lab-btn.orange {
+            border-color: rgba(251, 146, 60, .4);
+            color: #fb923c;
+        }
+
+        /* ── TOGGLE ── */
+        .toggle-row {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+        }
+
+        .toggle-label {
+            font-size: .72rem;
+            font-weight: 800;
+            color: #94a3b8;
+        }
+
+        .toggle {
+            width: 38px;
+            height: 20px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .12);
+            border: 1.5px solid rgba(255, 255, 255, .2);
+            position: relative;
+            transition: background .2s;
+            cursor: pointer;
+        }
+
+        .toggle.on {
+            background: rgba(74, 222, 128, .3);
+            border-color: #4ade80;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fff;
+            top: 1px;
+            left: 1px;
+            transition: left .2s;
+        }
+
+        .toggle.on::after {
+            left: 21px;
+        }
+
+        /* ── INFO CARD ── */
+        #infoCard {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 600px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #0d1f33, #0a3352);
+            border-radius: 22px 22px 0 0;
+            border-top: 3px solid rgba(99, 179, 237, .3);
+            padding: 16px 20px 30px;
+            z-index: 200;
+            transform: translateY(110%);
+            transition: transform .4s cubic-bezier(.22, 1, .36, 1);
+            box-shadow: 0 -8px 40px rgba(0, 0, 0, .6);
+        }
+
+        #infoCard.open {
+            transform: translateY(0);
+        }
+
+        .ic-handle {
+            width: 36px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, .18);
+            margin: 0 auto 12px;
+        }
+
+        .ic-top {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .ic-emoji {
+            font-size: 2.2rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .ic-step {
+            font-size: .6rem;
+            font-weight: 800;
+            color: #63b3ed;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .ic-title {
+            font-family: inherit;
+            font-size: 1.35rem;
+            color: #fff;
+        }
+
+        .ic-text {
+            font-size: .83rem;
+            color: #93c5fd;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        #icClose {
+            position: absolute;
+            top: 13px;
+            right: 15px;
+            background: rgba(255, 255, 255, .1);
+            border: none;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: 900;
+            font-size: .9rem;
+        }
+
+        /* LOADER */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #0d1117;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            transition: opacity .6s;
+        }
+
+        #loader.fade {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .ld-title {
+            font-family: inherit;
+            font-size: 2rem;
+            color: #63b3ed;
+            margin-bottom: 6px;
+        }
+
+        .ld-sub {
+            color: #475569;
+            font-size: .88rem;
+            font-weight: 700;
+        }
+
+        .ld-spin {
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(99, 179, 237, .15);
+            border-top-color: #63b3ed;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin-bottom: 18px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loader">
+        <div class="ld-spin"></div>
+        <div class="ld-title">⚙️ Mechanics Lab</div>
+        <div class="ld-sub">Initialising physics engine…</div>
+    </div>
+
+    <div id="tabs">
+        <div class="tab active" data-panel="p-force">💪 Forces</div>
+        <div class="tab" data-panel="p-incline">📐 Inclined Plane</div>
+        <div class="tab" data-panel="p-pulley">🪝 Pulley</div>
+        <div class="tab" data-panel="p-gear">⚙️ Gears</div>
+        <div class="tab" data-panel="p-proj">🎯 Projectile</div>
+    </div>
+
+    <!-- ═══ PANEL 1: FORCES ═══ -->
+    <div class="panel active" id="p-force">
+        <canvas class="sim-canvas" id="forceCanvas"></canvas>
+        <div class="hud-bottom">
+            <div class="readout-strip">
+                <div class="readout">
+                    <div class="readout-label">F (force)</div>
+                    <div class="readout-val" id="r-force">0 N</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">v (velocity)</div>
+                    <div class="readout-val" id="r-vel">0 m/s</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">a (accel)</div>
+                    <div class="readout-val" id="r-acc">0 m/s²</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">m (mass)</div>
+                    <div class="readout-val" id="r-mass">5 kg</div>
+                </div>
+            </div>
+            <div class="slider-row">
+                <div class="slider-group"><label>Mass (kg)</label><input type="range" id="massSlider" min="1" max="20"
+                        value="5"></div>
+            </div>
+            <div class="btn-row">
+                <button class="lab-btn" onclick="addForceObject()">➕ Add Object</button>
+                <button class="lab-btn red" onclick="clearForceObjects()">🗑 Clear</button>
+                <button class="lab-btn"
+                    onclick="showCard('💪','NEWTON\'S 2ND LAW','F = m × a','Force equals mass times acceleration! A heavier object needs more force to move at the same speed. Try dragging objects — see how the arrow (force vector) changes direction and size based on how fast you push! 🏃')">📖
+                    Learn</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ PANEL 2: INCLINED PLANE ═══ -->
+    <div class="panel" id="p-incline">
+        <canvas class="sim-canvas" id="inclineCanvas"></canvas>
+        <div class="hud-bottom">
+            <div class="readout-strip">
+                <div class="readout">
+                    <div class="readout-label">Angle</div>
+                    <div class="readout-val" id="r-angle">30°</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">v (speed)</div>
+                    <div class="readout-val" id="r-ispeed">0 m/s</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">a (accel)</div>
+                    <div class="readout-val" id="r-iacc">4.9 m/s²</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">Friction μ</div>
+                    <div class="readout-val" id="r-friction">0.00</div>
+                </div>
+            </div>
+            <div class="slider-row">
+                <div class="slider-group"><label>Angle (°)</label><input type="range" id="angleSlider" min="5" max="85"
+                        value="30"></div>
+                <div class="slider-group"><label>Friction</label><input type="range" id="frictionSlider" min="0"
+                        max="80" value="0"></div>
+            </div>
+            <div class="btn-row">
+                <button class="lab-btn green" onclick="inclineReset()">▶ Reset Block</button>
+                <button class="lab-btn"
+                    onclick="showCard('📐','INCLINED PLANE','Components of Gravity','On a slope, gravity pulls straight down, but only part of it pushes the block along the ramp (F = mg·sinθ) and part pushes into the ramp (mg·cosθ). Friction resists motion. Steeper angle = more acceleration! 🎿')">📖
+                    Learn</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ PANEL 3: PULLEY ═══ -->
+    <div class="panel" id="p-pulley">
+        <canvas class="sim-canvas" id="pulleyCanvas"></canvas>
+        <div class="hud-bottom">
+            <div class="readout-strip">
+                <div class="readout">
+                    <div class="readout-label">Load</div>
+                    <div class="readout-val" id="r-load">50 N</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">Effort</div>
+                    <div class="readout-val" id="r-effort">50 N</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">Pulleys</div>
+                    <div class="readout-val" id="r-pulleys">1</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">MA</div>
+                    <div class="readout-val" id="r-ma">1×</div>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="lab-btn" onclick="setPulleyCount(1)" id="pb1">1 Pulley</button>
+                <button class="lab-btn" onclick="setPulleyCount(2)" id="pb2">2 Pulleys</button>
+                <button class="lab-btn" onclick="setPulleyCount(3)" id="pb3">3 Pulleys</button>
+                <button class="lab-btn orange" onclick="pulleyPull()">⬇ Pull Rope</button>
+                <button class="lab-btn"
+                    onclick="showCard('🪝','PULLEYS','Mechanical Advantage','Each extra pulley halves the force you need! With 1 pulley you pull with full force. With 2 pulleys you only need HALF. With 3, just a THIRD! This is called Mechanical Advantage (MA). But you have to pull the rope twice as far. No free lunch in physics! ⚖️')">📖
+                    Learn</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ PANEL 4: GEARS ═══ -->
+    <div class="panel" id="p-gear">
+        <canvas class="sim-canvas" id="gearCanvas"></canvas>
+        <div class="hud-bottom">
+            <div class="readout-strip">
+                <div class="readout">
+                    <div class="readout-label">Driver RPM</div>
+                    <div class="readout-val" id="r-drpm">60</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">Driven RPM</div>
+                    <div class="readout-val" id="r-frpm">60</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">Ratio</div>
+                    <div class="readout-val" id="r-ratio">1:1</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">Torque ↑</div>
+                    <div class="readout-val" id="r-torque">1×</div>
+                </div>
+            </div>
+            <div class="slider-row">
+                <div class="slider-group"><label>Driver Speed</label><input type="range" id="gearSpeedSlider" min="10"
+                        max="200" value="60"></div>
+                <div class="slider-group"><label>Driver Size</label><input type="range" id="gearSizeSlider" min="1"
+                        max="4" value="2" step="1"></div>
+            </div>
+            <div class="btn-row">
+                <button class="lab-btn" id="gearModeBtn" onclick="toggleGearMode()">🔧 Free Build Mode</button>
+                <button class="lab-btn red" id="clearGearsBtn" onclick="clearFreeGears()" style="display:none">🗑 Clear
+                    Gears</button>
+                <button class="lab-btn"
+                    onclick="showCard('⚙️','GEAR SYSTEMS','Speed vs Torque','Big gear drives small gear → small gear spins FASTER but with LESS torque (turning force). Small drives big → big spins SLOWER but MORE torque. This is how bicycles work — low gear = easy to pedal uphill (more torque), high gear = fast on flat roads! 🚴')">📖
+                    Learn</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ PANEL 5: PROJECTILE ═══ -->
+    <div class="panel" id="p-proj">
+        <canvas class="sim-canvas" id="projCanvas"></canvas>
+        <div class="hud-bottom">
+            <div class="readout-strip">
+                <div class="readout">
+                    <div class="readout-label">vx</div>
+                    <div class="readout-val" id="r-vx">0 m/s</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">vy</div>
+                    <div class="readout-val" id="r-vy">0 m/s</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">Height</div>
+                    <div class="readout-val" id="r-height">0 m</div>
+                </div>
+                <div class="readout">
+                    <div class="readout-label">Range</div>
+                    <div class="readout-val" id="r-range">0 m</div>
+                </div>
+            </div>
+            <div class="slider-row">
+                <div class="slider-group"><label>Angle (°)</label><input type="range" id="projAngle" min="5" max="85"
+                        value="45"></div>
+                <div class="slider-group"><label>Power</label><input type="range" id="projPower" min="10" max="100"
+                        value="50"></div>
+            </div>
+            <div class="btn-row">
+                <button class="lab-btn green" onclick="launchProjectile()">🚀 Launch!</button>
+                <button class="lab-btn red" onclick="resetProjectile()">↺ Reset</button>
+                <button class="lab-btn"
+                    onclick="showCard('🎯','PROJECTILE MOTION','Horizontal + Vertical','A launched object has two independent motions at once! Horizontal: constant speed (no force, ignoring air). Vertical: gravity pulls it down at 9.8 m/s². The 45° angle gives the MAXIMUM range — try it! The path is always a perfect parabola. 📐')">📖
+                    Learn</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- INFO CARD -->
+    <div id="infoCard">
+        <div class="ic-handle"></div>
+        <button id="icClose">✕</button>
+        <div class="ic-top">
+            <div class="ic-emoji" id="icEmoji">⚙️</div>
+            <div>
+                <div class="ic-step" id="icStep"></div>
+                <div class="ic-title" id="icTitle"></div>
+            </div>
+        </div>
+        <div class="ic-text" id="icText"></div>
+    </div>
+
+    <script>
+        // ══════════════════════════════════════════
+        //  GLOBALS
+        // ══════════════════════════════════════════
+        const TAU = Math.PI * 2;
+        function rnd(a, b) { return a + Math.random() * (b - a); }
+        function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+        function lerp(a, b, t) { return a + (b - a) * t; }
+
+        function notifyParentOverlayState(isOpen) {
+            window.parent.postMessage(
+                {
+                    type: 'scikidz-ar-overlay',
+                    open: isOpen,
+                },
+                window.location.origin
+            );
+        }
+
+        function getHudHeight(panelId) {
+            const panel = document.getElementById(panelId);
+            const hud = panel?.querySelector('.hud-bottom');
+            return hud ? hud.offsetHeight + 12 : 160;
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(t => {
+            t.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+                t.classList.add('active');
+                document.getElementById(t.dataset.panel).classList.add('active');
+                resizeAll();
+            });
+        });
+
+        function showCard(emoji, step, title, text) {
+            document.getElementById('icEmoji').textContent = emoji;
+            document.getElementById('icStep').textContent = step;
+            document.getElementById('icTitle').textContent = title;
+            document.getElementById('icText').textContent = text;
+            document.getElementById('infoCard').classList.add('open');
+            notifyParentOverlayState(true);
+        }
+
+        document.getElementById('icClose').onclick = () => {
+            document.getElementById('infoCard').classList.remove('open');
+            notifyParentOverlayState(false);
+        };
+        document.getElementById('icClose').onclick = () => document.getElementById('infoCard').classList.remove('open');
+
+        const infoCard = document.getElementById('infoCard');
+
+        const infoCardObserver = new MutationObserver(() => {
+            notifyParentOverlayState(infoCard.classList.contains('open'));
+        });
+
+        infoCardObserver.observe(infoCard, {
+            attributes: true,
+            attributeFilter: ['class'],
+        });
+
+        // ══════════════════════════════════════════
+        //  PANEL 1 — FORCES
+        // ══════════════════════════════════════════
+        const FC = document.getElementById('forceCanvas');
+        const fctx = FC.getContext('2d');
+
+        let forceObjects = [];
+        let selectedObj = null;
+        let dragOffX = 0, dragOffY = 0;
+        let prevDragX = 0, prevDragY = 0;
+        let dragVX = 0, dragVY = 0;
+        let fMass = 5;
+
+        const COLORS = ['#63b3ed', '#f6ad55', '#68d391', '#fc8181', '#b794f4', '#76e4f7'];
+
+        function makeForceObj(x, y, idx) {
+            return {
+                x, y, vx: 0, vy: 0, ax: 0, ay: 0, r: 28, mass: fMass,
+                color: COLORS[idx % COLORS.length], dragging: false, trail: []
+            };
+        }
+
+        function addForceObject() {
+            const x = rnd(60, FC.width - 60);
+            const y = rnd(60, FC.height * 0.55);
+            forceObjects.push(makeForceObj(x, y, forceObjects.length));
+        }
+
+        function clearForceObjects() { forceObjects = []; selectedObj = null; }
+
+        // Touch/mouse on force canvas
+        let fPointerDown = false, fPX = 0, fPY = 0;
+
+        function getCanvasPos(canvas, e) {
+            const r = canvas.getBoundingClientRect();
+            const src = e.touches ? e.touches[0] : e;
+            return { x: src.clientX - r.left, y: src.clientY - r.top };
+        }
+
+        FC.addEventListener('pointerdown', e => {
+            const p = getCanvasPos(FC, e);
+            fPointerDown = true;
+            fPX = p.x; fPY = p.y;
+            selectedObj = null;
+            dragVX = 0; dragVY = 0;
+            for (let i = forceObjects.length - 1; i >= 0; i--) {
+                const o = forceObjects[i];
+                if (Math.hypot(p.x - o.x, p.y - o.y) < o.r + 10) {
+                    selectedObj = o;
+                    o.dragging = true;
+                    o.vx = 0; o.vy = 0;
+                    dragOffX = p.x - o.x;
+                    dragOffY = p.y - o.y;
+                    prevDragX = p.x; prevDragY = p.y;
+                    break;
+                }
+            }
+            FC.setPointerCapture(e.pointerId);
+        });
+
+        FC.addEventListener('pointermove', e => {
+            if (!fPointerDown || !selectedObj) return;
+            const p = getCanvasPos(FC, e);
+            dragVX = p.x - prevDragX;
+            dragVY = p.y - prevDragY;
+            prevDragX = p.x; prevDragY = p.y;
+            selectedObj.x = p.x - dragOffX;
+            selectedObj.y = p.y - dragOffY;
+            selectedObj.ax = dragVX * 60;
+            selectedObj.ay = dragVY * 60;
+        });
+
+        FC.addEventListener('pointerup', e => {
+            fPointerDown = false;
+            if (selectedObj) {
+                selectedObj.vx = dragVX * 8;
+                selectedObj.vy = dragVY * 8;
+                selectedObj.dragging = false;
+            }
+            selectedObj = null;
+        });
+
+        document.getElementById('massSlider').oninput = function () {
+            fMass = +this.value;
+            forceObjects.forEach(o => o.mass = fMass);
+            document.getElementById('r-mass').textContent = fMass + ' kg';
+        };
+
+        let forceTick = 0;
+        function drawForces() {
+            requestAnimationFrame(drawForces);
+            forceTick++;
+            const W = FC.width, H = FC.height;
+            const hudH = getHudHeight('p-force');
+            const groundY = H - hudH - 10;
+
+            // Background
+            fctx.fillStyle = '#0d1117';
+            fctx.fillRect(0, 0, W, H);
+
+            // Grid
+            fctx.strokeStyle = 'rgba(99,179,237,.05)';
+            fctx.lineWidth = 1;
+            for (let x = 0; x < W; x += 40) { fctx.beginPath(); fctx.moveTo(x, 0); fctx.lineTo(x, groundY); fctx.stroke(); }
+            for (let y = 0; y < groundY; y += 40) { fctx.beginPath(); fctx.moveTo(0, y); fctx.lineTo(W, y); fctx.stroke(); }
+
+            // Ground
+            fctx.fillStyle = '#1e293b';
+            fctx.fillRect(0, groundY, W, 4);
+            fctx.fillStyle = 'rgba(99,179,237,.08)';
+            fctx.fillRect(0, groundY + 4, W, H - groundY - 4);
+
+            // Physics update
+            forceObjects.forEach(o => {
+                if (o.dragging) return;
+                const g = 0.35;
+                o.vy += g;
+                o.vx *= 0.98;
+                o.x += o.vx;
+                o.y += o.vy;
+                // Floor bounce
+                if (o.y + o.r > groundY) {
+                    o.y = groundY - o.r;
+                    o.vy *= -0.55;
+                    o.vx *= 0.88;
+                    if (Math.abs(o.vy) < 1) o.vy = 0;
+                }
+                // Wall bounce
+                if (o.x - o.r < 0) { o.x = o.r; o.vx *= -0.7; }
+                if (o.x + o.r > W) { o.x = W - o.r; o.vx *= -0.7; }
+                // Trail
+                o.trail.push({ x: o.x, y: o.y });
+                if (o.trail.length > 18) o.trail.shift();
+                o.ax = 0; o.ay = 0;
+            });
+
+            // Draw objects
+            forceObjects.forEach((o, i) => {
+                // Trail
+                o.trail.forEach((pt, ti) => {
+                    const alpha = ti / o.trail.length * 0.3;
+                    fctx.beginPath();
+                    fctx.arc(pt.x, pt.y, o.r * (ti / o.trail.length) * 0.5, 0, TAU);
+                    fctx.fillStyle = o.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                    fctx.fill();
+                });
+
+                // Glow
+                const grad = fctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r * 1.6);
+                grad.addColorStop(0, o.color + '44');
+                grad.addColorStop(1, 'transparent');
+                fctx.beginPath(); fctx.arc(o.x, o.y, o.r * 1.6, 0, TAU);
+                fctx.fillStyle = grad; fctx.fill();
+
+                // Body
+                fctx.beginPath(); fctx.arc(o.x, o.y, o.r, 0, TAU);
+                fctx.fillStyle = o.color; fctx.fill();
+                fctx.strokeStyle = 'rgba(255,255,255,.3)'; fctx.lineWidth = 2; fctx.stroke();
+
+                // Mass label
+                fctx.fillStyle = '#0d1117';
+                fctx.font = `bold ${Math.floor(o.r * .6)}px Nunito`;
+                fctx.textAlign = 'center'; fctx.textBaseline = 'middle';
+                fctx.fillText(o.mass + 'kg', o.x, o.y);
+
+                // Force arrow when moving
+                const speed = Math.hypot(o.vx, o.vy);
+                const F = (o.mass * speed * 0.8).toFixed(1);
+                if (speed > 0.5 || o.dragging) {
+                    const vx = o.dragging ? dragVX : o.vx;
+                    const vy = o.dragging ? dragVY : o.vy;
+                    const mag = Math.hypot(vx, vy);
+                    if (mag > 0.1) {
+                        const arrowLen = clamp(mag * 12, 20, 80);
+                        const nx = vx / mag, ny = vy / mag;
+                        const ex = o.x + nx * arrowLen + nx * o.r;
+                        const ey = o.y + ny * arrowLen + ny * o.r;
+                        // Shaft
+                        fctx.beginPath();
+                        fctx.moveTo(o.x + nx * o.r, o.y + ny * o.r);
+                        fctx.lineTo(ex, ey);
+                        fctx.strokeStyle = '#fbbf24'; fctx.lineWidth = 3; fctx.stroke();
+                        // Arrowhead
+                        const headLen = 12, headAng = 0.4;
+                        fctx.beginPath();
+                        fctx.moveTo(ex, ey);
+                        fctx.lineTo(ex - headLen * Math.cos(Math.atan2(ny, nx) - headAng), ey - headLen * Math.sin(Math.atan2(ny, nx) - headAng));
+                        fctx.lineTo(ex - headLen * Math.cos(Math.atan2(ny, nx) + headAng), ey - headLen * Math.sin(Math.atan2(ny, nx) + headAng));
+                        fctx.closePath();
+                        fctx.fillStyle = '#fbbf24'; fctx.fill();
+                        // F label
+                        fctx.fillStyle = '#fbbf24'; fctx.font = 'bold 11px Nunito'; fctx.textAlign = 'left';
+                        fctx.fillText('F=' + F + 'N', ex + 6, ey - 4);
+                    }
+                }
+
+                // Velocity readout for selected
+                if (o === selectedObj || i === forceObjects.length - 1) {
+                    const spd = Math.hypot(o.vx, o.vy);
+                    document.getElementById('r-force').textContent = (o.mass * spd * 0.8).toFixed(1) + ' N';
+                    document.getElementById('r-vel').textContent = (spd * 0.5).toFixed(1) + ' m/s';
+                    document.getElementById('r-acc').textContent = (spd * 0.3).toFixed(1) + ' m/s²';
+                }
+            });
+
+            // Hint if empty
+            if (forceObjects.length === 0) {
+                fctx.fillStyle = 'rgba(99,179,237,.25)';
+                fctx.font = 'bold 15px Nunito'; fctx.textAlign = 'center'; fctx.textBaseline = 'middle';
+                fctx.fillText('Tap "Add Object" to place a physics object, then drag it!', W / 2, (groundY) / 2);
+            }
+        }
+
+        addForceObject();
+        addForceObject();
+
+        // ══════════════════════════════════════════
+        //  PANEL 2 — INCLINED PLANE
+        // ══════════════════════════════════════════
+        const IC = document.getElementById('inclineCanvas');
+        const ictx = IC.getContext('2d');
+
+        let inclineAngle = 30;
+        let inclineFriction = 0;
+        let blockPos = 0; // 0=top, increases as slides down
+        let blockVel = 0;
+        let inclineRunning = false;
+        const G = 9.8;
+
+        document.getElementById('angleSlider').oninput = function () {
+            inclineAngle = +this.value;
+            document.getElementById('r-angle').textContent = inclineAngle + '°';
+            inclineReset();
+        };
+        document.getElementById('frictionSlider').oninput = function () {
+            inclineFriction = this.value / 100;
+            document.getElementById('r-friction').textContent = inclineFriction.toFixed(2);
+            inclineReset();
+        };
+
+        function inclineReset() {
+            blockPos = 0; blockVel = 0; inclineRunning = true;
+        }
+
+        let inclineTick = 0;
+        function drawIncline() {
+            requestAnimationFrame(drawIncline);
+            inclineTick++;
+            const W = IC.width, H = IC.height;
+            const hudH = getHudHeight('p-incline');
+            const areaH = H - hudH;
+
+            ictx.fillStyle = '#0d1117';
+            ictx.fillRect(0, 0, W, H);
+
+            // Grid
+            ictx.strokeStyle = 'rgba(99,179,237,.04)'; ictx.lineWidth = 1;
+            for (let x = 0; x < W; x += 40) { ictx.beginPath(); ictx.moveTo(x, 0); ictx.lineTo(x, areaH); ictx.stroke(); }
+            for (let y = 0; y < areaH; y += 40) { ictx.beginPath(); ictx.moveTo(0, y); ictx.lineTo(W, y); ictx.stroke(); }
+
+            const ang = inclineAngle * Math.PI / 180;
+            const slopeLen = Math.min(W * .7, areaH * .85 / Math.sin(ang));
+            const baseX = W * .15;
+            const baseY = areaH * .88;
+            const topX = baseX + slopeLen * Math.cos(ang);
+            const topY = baseY - slopeLen * Math.sin(ang);
+
+            // Ground
+            ictx.fillStyle = '#1e293b';
+            ictx.beginPath();
+            ictx.moveTo(baseX - 20, baseY);
+            ictx.lineTo(topX + 10, baseY);
+            ictx.lineTo(baseX - 20, baseY);
+            ictx.fillRect(0, baseY, W, areaH - baseY + 10);
+
+            // Slope surface
+            ictx.beginPath();
+            ictx.moveTo(baseX, baseY);
+            ictx.lineTo(topX, topY);
+            ictx.lineTo(topX, baseY);
+            ictx.closePath();
+            ictx.fillStyle = '#1e3a5f';
+            ictx.fill();
+            ictx.strokeStyle = '#63b3ed'; ictx.lineWidth = 3;
+            ictx.beginPath(); ictx.moveTo(baseX, baseY); ictx.lineTo(topX, topY); ictx.stroke();
+
+            // Angle arc
+            ictx.beginPath();
+            ictx.arc(baseX, baseY, 38, -ang, 0);
+            ictx.strokeStyle = '#f6ad55'; ictx.lineWidth = 2; ictx.stroke();
+            ictx.fillStyle = '#f6ad55'; ictx.font = 'bold 13px Nunito'; ictx.textAlign = 'left';
+            ictx.fillText(inclineAngle + '°', baseX + 42, baseY - 10);
+
+            // Physics
+            const a_gravity = G * Math.sin(ang);
+            const a_friction = inclineFriction * G * Math.cos(ang);
+            const netAcc = Math.max(0, a_gravity - a_friction);
+            const maxPos = slopeLen - 26;
+
+            if (inclineRunning && blockPos < maxPos) {
+                blockVel += netAcc * 0.016;
+                blockPos = Math.min(blockPos + blockVel * 0.5, maxPos);
+                if (blockPos >= maxPos) { blockVel = 0; }
+            }
+
+            // Block position on slope
+            const t = 1 - blockPos / slopeLen;
+            const bx = baseX + (topX - baseX) * t;
+            const by = baseY + (topY - baseY) * t;
+
+            // Draw block
+            const bSize = 22;
+            ictx.save();
+            ictx.translate(bx, by);
+            ictx.rotate(-ang);
+            ictx.fillStyle = '#f6ad55';
+            ictx.fillRect(-bSize / 2, -bSize, bSize, bSize);
+            ictx.strokeStyle = 'rgba(255,255,255,.4)'; ictx.lineWidth = 1.5;
+            ictx.strokeRect(-bSize / 2, -bSize, bSize, bSize);
+            ictx.restore();
+
+            // Force arrows on block
+            if (netAcc > 0.05) {
+                // Gravity component along slope
+                const gArrLen = clamp(a_gravity * 6, 15, 70);
+                ictx.beginPath();
+                ictx.moveTo(bx, by - bSize / 2);
+                ictx.lineTo(bx + Math.cos(ang) * gArrLen, by + Math.sin(ang) * gArrLen - bSize / 2);
+                ictx.strokeStyle = '#fc8181'; ictx.lineWidth = 2.5; ictx.stroke();
+                ictx.fillStyle = '#fc8181'; ictx.font = 'bold 10px Nunito';
+                ictx.fillText('mg·sinθ', bx + gArrLen * .5 + 8, by + 8);
+
+                if (inclineFriction > 0) {
+                    const fArrLen = clamp(a_friction * 6, 8, 40);
+                    ictx.beginPath();
+                    ictx.moveTo(bx - Math.cos(ang) * 10, by - Math.sin(ang) * 10 - bSize / 2);
+                    ictx.lineTo(bx - Math.cos(ang) * (10 + fArrLen), by - Math.sin(ang) * (10 + fArrLen) - bSize / 2);
+                    ictx.strokeStyle = '#68d391'; ictx.lineWidth = 2; ictx.stroke();
+                    ictx.fillStyle = '#68d391'; ictx.font = 'bold 10px Nunito';
+                    ictx.fillText('friction', bx - fArrLen - 20, by - bSize - 8);
+                }
+            }
+
+            // Readouts
+            document.getElementById('r-ispeed').textContent = (blockVel * 0.5).toFixed(2) + ' m/s';
+            document.getElementById('r-iacc').textContent = netAcc.toFixed(2) + ' m/s²';
+
+            // Stopped label
+            if (blockPos >= maxPos) {
+                ictx.fillStyle = 'rgba(99,179,237,.6)';
+                ictx.font = 'bold 13px Nunito'; ictx.textAlign = 'center';
+                ictx.fillText('Block reached bottom — tap Reset!', W / 2, areaH * .12);
+            }
+        }
+
+        inclineReset();
+
+        // ══════════════════════════════════════════
+        //  PANEL 3 — PULLEY
+        // ══════════════════════════════════════════
+        const PC = document.getElementById('pulleyCanvas');
+        const pctx = PC.getContext('2d');
+
+        let pulleyCount = 1;
+        let pulleyLoad = 50;
+        let pulleyRopeY = 0; // how far rope has been pulled
+        let pulleyAnim = 0;
+        let pulleyPulling = false;
+
+        function setPulleyCount(n) {
+            pulleyCount = n;
+            pulleyRopeY = 0; pulleyAnim = 0; pulleyPulling = false;
+            ['pb1', 'pb2', 'pb3'].forEach((id, i) => {
+                document.getElementById(id).classList.toggle('active-btn', i + 1 === n);
+            });
+            const ma = pulleyCount;
+            document.getElementById('r-pulleys').textContent = n;
+            document.getElementById('r-effort').textContent = (pulleyLoad / ma).toFixed(1) + ' N';
+            document.getElementById('r-ma').textContent = ma + '×';
+        }
+
+        function pulleyPull() {
+            pulleyPulling = true;
+            pulleyAnim = 0;
+        }
+
+        let pulleyTick = 0;
+        function drawPulley() {
+            requestAnimationFrame(drawPulley);
+            pulleyTick++;
+            const W = PC.width, H = PC.height;
+            const hudH = getHudHeight('p-pulley');
+            const areaH = H - hudH;
+
+            pctx.fillStyle = '#0d1117';
+            pctx.fillRect(0, 0, W, H);
+
+            // Ceiling
+            pctx.fillStyle = '#1e293b';
+            pctx.fillRect(0, 0, W, 18);
+            // Hatch
+            pctx.strokeStyle = 'rgba(99,179,237,.2)'; pctx.lineWidth = 1;
+            for (let x = 0; x < W; x += 14) { pctx.beginPath(); pctx.moveTo(x, 0); pctx.lineTo(x - 10, 18); pctx.stroke(); }
+
+            if (pulleyPulling && pulleyRopeY < 80) {
+                pulleyRopeY += 1.2;
+            }
+            if (pulleyRopeY >= 80) pulleyPulling = false;
+
+            const liftAmt = pulleyRopeY / pulleyCount;
+            const ma = pulleyCount;
+            const effort = (pulleyLoad / ma).toFixed(1);
+
+            const cx = W / 2;
+            const pRadius = 22;
+
+            // Draw based on pulley count
+            const loadBaseY = areaH * 0.78 - liftAmt;
+            const loadW = 60, loadH = 50;
+
+            if (pulleyCount === 1) {
+                // Fixed pulley at top
+                const py = 40;
+                drawPulleyWheel(cx, py, pRadius);
+                // Rope left (load side)
+                pctx.strokeStyle = '#f6ad55'; pctx.lineWidth = 3;
+                pctx.beginPath(); pctx.moveTo(cx - pRadius * .8, py); pctx.lineTo(cx - pRadius * .8, loadBaseY); pctx.stroke();
+                // Rope right (effort side)
+                pctx.beginPath(); pctx.moveTo(cx + pRadius * .8, py); pctx.lineTo(cx + pRadius * .8, py + 80 + pulleyRopeY); pctx.stroke();
+                // Effort arrow
+                drawEffortArrow(cx + pRadius * .8, py + 85 + pulleyRopeY, effort, true);
+                // Load
+                drawLoad(cx - pRadius * .8 - loadW / 2, loadBaseY, loadW, loadH);
+
+            } else if (pulleyCount === 2) {
+                // Fixed at top, movable at load
+                const fixedY = 40;
+                const movableY = loadBaseY - pRadius * 2;
+                drawPulleyWheel(cx, fixedY, pRadius);
+                drawPulleyWheel(cx, movableY, pRadius);
+                // Ropes
+                pctx.strokeStyle = '#f6ad55'; pctx.lineWidth = 3;
+                pctx.beginPath(); pctx.moveTo(cx - pRadius * .8, fixedY); pctx.lineTo(cx - pRadius * .8, movableY + pRadius * .8); pctx.stroke();
+                pctx.beginPath(); pctx.moveTo(cx + pRadius * .8, movableY - pRadius * .8); pctx.lineTo(cx + pRadius * .8, fixedY); pctx.stroke();
+                pctx.beginPath(); pctx.moveTo(cx + pRadius * .8, fixedY); pctx.lineTo(cx + pRadius * .8, fixedY + 90 + pulleyRopeY); pctx.stroke();
+                drawEffortArrow(cx + pRadius * .8, fixedY + 95 + pulleyRopeY, effort, true);
+                drawLoad(cx - loadW / 2, loadBaseY, loadW, loadH);
+
+            } else {
+                // 3 pulleys
+                const p1y = 40, p2y = areaH * .35 - liftAmt, p3y = areaH * .18;
+                drawPulleyWheel(cx - 30, p1y, pRadius);
+                drawPulleyWheel(cx + 30, p3y, pRadius);
+                drawPulleyWheel(cx, p2y, pRadius);
+                pctx.strokeStyle = '#f6ad55'; pctx.lineWidth = 3;
+                pctx.beginPath(); pctx.moveTo(cx - 30, p1y + pRadius); pctx.lineTo(cx - 30, p2y - pRadius); pctx.stroke();
+                pctx.beginPath(); pctx.moveTo(cx, p2y - pRadius); pctx.lineTo(cx, p3y + pRadius); pctx.stroke();
+                pctx.beginPath(); pctx.moveTo(cx + 30, p3y + pRadius); pctx.lineTo(cx + 30, p3y + 100 + pulleyRopeY); pctx.stroke();
+                drawEffortArrow(cx + 30, p3y + 105 + pulleyRopeY, effort, true);
+                drawLoad(cx - loadW / 2, loadBaseY, loadW, loadH);
+            }
+
+            // MA label
+            pctx.fillStyle = '#68d391';
+            pctx.font = 'bold 13px Nunito'; pctx.textAlign = 'center';
+            pctx.fillText(`MA = ${ma}× → Effort = ${effort} N (Load = ${pulleyLoad} N)`, W / 2, areaH - 12);
+
+            document.getElementById('r-effort').textContent = effort + ' N';
+            document.getElementById('r-ma').textContent = ma + '×';
+        }
+
+        function drawPulleyWheel(x, y, r) {
+            pctx.beginPath(); pctx.arc(x, y, r, 0, TAU);
+            pctx.fillStyle = '#2d3748'; pctx.fill();
+            pctx.strokeStyle = '#63b3ed'; pctx.lineWidth = 3; pctx.stroke();
+            pctx.beginPath(); pctx.arc(x, y, r * .35, 0, TAU);
+            pctx.fillStyle = '#63b3ed'; pctx.fill();
+            // Mount
+            pctx.beginPath(); pctx.moveTo(x - 12, y - r); pctx.lineTo(x + 12, y - r); pctx.lineTo(x, y - r - 14); pctx.closePath();
+            pctx.fillStyle = '#4a5568'; pctx.fill();
+        }
+
+        function drawLoad(x, y, w, h) {
+            const grad = pctx.createLinearGradient(x, y, x + w, y + h);
+            grad.addColorStop(0, '#f6ad55'); grad.addColorStop(1, '#dd6b20');
+            pctx.fillStyle = grad;
+            pctx.beginPath(); pctx.roundRect(x, y, w, h, 6); pctx.fill();
+            pctx.strokeStyle = 'rgba(255,255,255,.3)'; pctx.lineWidth = 1.5; pctx.stroke();
+            pctx.fillStyle = '#0d1117'; pctx.font = 'bold 13px Nunito'; pctx.textAlign = 'center'; pctx.textBaseline = 'middle';
+            pctx.fillText(pulleyLoad + 'N', x + w / 2, y + h / 2);
+        }
+
+        function drawEffortArrow(x, y, effort, down) {
+            const dir = down ? 1 : -1;
+            pctx.beginPath(); pctx.moveTo(x, y); pctx.lineTo(x, y + dir * 30);
+            pctx.strokeStyle = '#68d391'; pctx.lineWidth = 3; pctx.stroke();
+            pctx.beginPath(); pctx.moveTo(x, y + dir * 30);
+            pctx.lineTo(x - 8, y + dir * 18); pctx.lineTo(x + 8, y + dir * 18); pctx.closePath();
+            pctx.fillStyle = '#68d391'; pctx.fill();
+            pctx.fillStyle = '#68d391'; pctx.font = 'bold 11px Nunito'; pctx.textAlign = 'left'; pctx.textBaseline = 'middle';
+            pctx.fillText('F=' + effort + 'N', x + 12, y + dir * 15);
+        }
+
+        setPulleyCount(1);
+
+        // ══════════════════════════════════════════
+        //  PANEL 4 — GEARS
+        // ══════════════════════════════════════════
+        const GC = document.getElementById('gearCanvas');
+        const gctx = GC.getContext('2d');
+
+        let gearSpeed = 60;
+        let driverTeeth = 16;
+        let gearAngle1 = 0, gearAngle2 = 0, gearAngle3 = 0;
+        let gearMode = 'prebuilt'; // 'prebuilt' | 'free'
+        let freeGears = [];
+        let selectedFreeGear = null;
+        let freeGearDragOff = { x: 0, y: 0 };
+        let addingGear = false;
+
+        const GEAR_TOOTH_SIZES = { 1: 8, 2: 16, 3: 24, 4: 32 };
+        const GEAR_RADII = { 1: 30, 2: 50, 3: 70, 4: 90 };
+
+        document.getElementById('gearSpeedSlider').oninput = function () {
+            gearSpeed = +this.value;
+        };
+        document.getElementById('gearSizeSlider').oninput = function () {
+            driverTeeth = GEAR_TOOTH_SIZES[+this.value];
+        };
+
+        function toggleGearMode() {
+            gearMode = gearMode === 'prebuilt' ? 'free' : 'prebuilt';
+            document.getElementById('gearModeBtn').textContent = gearMode === 'free' ? '🔩 Pre-Built Mode' : '🔧 Free Build Mode';
+            document.getElementById('clearGearsBtn').style.display = gearMode === 'free' ? 'inline-flex' : 'none';
+            if (gearMode === 'free' && freeGears.length === 0) addFreeGear(null);
+        }
+
+        function clearFreeGears() { freeGears = []; }
+
+        function addFreeGear(pos) {
+            const W = GC.width, H = GC.height;
+            const hudH = getHudHeight('p-gear');
+            const areaH = H - hudH;
+            const x = pos ? pos.x : rnd(80, W - 80);
+            const y = pos ? pos.y : rnd(80, (H - hudH) - 80);
+            const sizes = [30, 44, 58, 72];
+            const r = sizes[Math.floor(rnd(0, 4))];
+            freeGears.push({ x, y, r, angle: 0, teeth: Math.round(r / 3.2), speed: 0, color: COLORS[freeGears.length % COLORS.length] });
+        }
+
+        // Free build tap
+        let gearPtrDown = false, gearPtrX = 0, gearPtrY = 0;
+        GC.addEventListener('pointerdown', e => {
+            const p = getCanvasPos(GC, e);
+            gearPtrDown = true; gearPtrX = p.x; gearPtrY = p.y;
+            if (gearMode === 'free') {
+                selectedFreeGear = null;
+                for (let i = freeGears.length - 1; i >= 0; i--) {
+                    const g = freeGears[i];
+                    if (Math.hypot(p.x - g.x, p.y - g.y) < g.r + 12) {
+                        selectedFreeGear = g;
+                        freeGearDragOff = { x: p.x - g.x, y: p.y - g.y };
+                        break;
+                    }
+                }
+                GC.setPointerCapture(e.pointerId);
+            }
+        });
+        GC.addEventListener('pointermove', e => {
+            if (!gearPtrDown || !selectedFreeGear || gearMode !== 'free') return;
+            const p = getCanvasPos(GC, e);
+            selectedFreeGear.x = p.x - freeGearDragOff.x;
+            selectedFreeGear.y = p.y - freeGearDragOff.y;
+        });
+        GC.addEventListener('pointerup', e => {
+            const p = getCanvasPos(GC, e);
+            if (gearMode === 'free' && !selectedFreeGear && Math.hypot(p.x - gearPtrX, p.y - gearPtrY) < 8) {
+                addFreeGear(p);
+            }
+            gearPtrDown = false; selectedFreeGear = null;
+        });
+
+        function drawGearShape(ctx, x, y, r, teeth, angle, color, alpha = 1) {
+            const outerR = r, innerR = r * .78, tipR = r * 1.18, valleyR = r * .82;
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+            ctx.globalAlpha = alpha;
+            // Gear body
+            ctx.beginPath();
+            for (let i = 0; i < teeth; i++) {
+                const a1 = (i / teeth) * TAU;
+                const a2 = ((i + .4) / teeth) * TAU;
+                const a3 = ((i + .6) / teeth) * TAU;
+                const a4 = ((i + 1) / teeth) * TAU;
+                if (i === 0) ctx.moveTo(Math.cos(a1) * outerR, Math.sin(a1) * outerR);
+                ctx.lineTo(Math.cos(a1) * outerR, Math.sin(a1) * outerR);
+                ctx.lineTo(Math.cos(a2) * tipR, Math.sin(a2) * tipR);
+                ctx.lineTo(Math.cos(a3) * tipR, Math.sin(a3) * tipR);
+                ctx.lineTo(Math.cos(a4) * outerR, Math.sin(a4) * outerR);
+            }
+            ctx.closePath();
+            ctx.fillStyle = color; ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 1.5; ctx.stroke();
+            // Hub
+            ctx.beginPath(); ctx.arc(0, 0, r * .28, 0, TAU);
+            ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.lineWidth = 1.5; ctx.stroke();
+            // Spokes
+            for (let i = 0; i < 4; i++) {
+                const a = angle + (i / 4) * TAU;
+                ctx.beginPath(); ctx.moveTo(Math.cos(a) * r * .3, Math.sin(a) * r * .3);
+                ctx.lineTo(Math.cos(a) * r * .75, Math.sin(a) * r * .75);
+                ctx.strokeStyle = 'rgba(255,255,255,.15)'; ctx.lineWidth = 4; ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        let gearTick = 0;
+        function drawGears() {
+            requestAnimationFrame(drawGears);
+            gearTick++;
+            const W = GC.width, H = GC.height, hudH = 160, areaH = H - hudH;
+            gctx.fillStyle = '#0d1117'; gctx.fillRect(0, 0, W, H);
+
+            // Grid
+            gctx.strokeStyle = 'rgba(99,179,237,.04)'; gctx.lineWidth = 1;
+            for (let x = 0; x < W; x += 40) { gctx.beginPath(); gctx.moveTo(x, 0); gctx.lineTo(x, areaH); gctx.stroke(); }
+            for (let y = 0; y < areaH; y += 40) { gctx.beginPath(); gctx.moveTo(0, y); gctx.lineTo(W, y); gctx.stroke(); }
+
+            const rpmRad = gearSpeed * TAU / 3600;
+
+            if (gearMode === 'prebuilt') {
+                const cx = W / 2, cy = areaH * .42;
+                const r1 = GEAR_RADII[document.getElementById('gearSizeSlider').value] || 50;
+                const t1 = Math.round(r1 / 3.2);
+                const r2 = 50, t2 = Math.round(r2 / 3.2);
+                const r3 = 34, t3 = Math.round(r3 / 3.2);
+                const ratio2 = t1 / t2;
+                const ratio3 = t2 / t3;
+                const speed1 = gearSpeed;
+                const speed2 = -speed1 * ratio2;
+                const speed3 = speed2 * (-ratio3);
+
+                gearAngle1 += rpmRad;
+                gearAngle2 -= rpmRad * ratio2;
+                gearAngle3 += rpmRad * ratio2 * ratio3;
+
+                // Axle lines
+                gctx.strokeStyle = 'rgba(99,179,237,.15)'; gctx.lineWidth = 2;
+                gctx.beginPath(); gctx.moveTo(cx, cy); gctx.lineTo(cx + r1 + r2, cy); gctx.stroke();
+                gctx.beginPath(); gctx.moveTo(cx + r1 + r2, cy); gctx.lineTo(cx + r1 + r2 * 2 + r3, cy); gctx.stroke();
+
+                drawGearShape(gctx, cx, cy, r1, t1, gearAngle1, '#63b3ed');
+                drawGearShape(gctx, cx + r1 + r2, cy, r2, t2, gearAngle2, '#f6ad55');
+                drawGearShape(gctx, cx + r1 + r2 * 2 + r3, cy, r3, t3, gearAngle3, '#68d391');
+
+                // Speed labels
+                const labels = [['Driver', cx, cy + r1 + 18, speed1], ['Driven 1', cx + r1 + r2, cy + r2 + 18, speed2], ['Driven 2', cx + r1 + r2 * 2 + r3, cy + r3 + 18, speed3]];
+                labels.forEach(([name, lx, ly, spd]) => {
+                    gctx.fillStyle = 'rgba(255,255,255,.55)'; gctx.font = 'bold 11px Nunito'; gctx.textAlign = 'center';
+                    gctx.fillText(name, lx, ly);
+                    gctx.fillStyle = '#fbbf24'; gctx.font = 'bold 12px Nunito';
+                    gctx.fillText(Math.abs(spd).toFixed(0) + ' RPM', lx, ly + 15);
+                });
+
+                document.getElementById('r-drpm').textContent = speed1.toFixed(0);
+                document.getElementById('r-frpm').textContent = Math.abs(speed3).toFixed(0);
+                const overallRatio = (t1 / t2) * (t2 / t3);
+                document.getElementById('r-ratio').textContent = `1:${overallRatio.toFixed(1)}`;
+                document.getElementById('r-torque').textContent = overallRatio.toFixed(1) + '×';
+
+            } else {
+                // Free build mode
+                if (freeGears.length > 0) {
+                    freeGears[0].speed = gearSpeed;
+                    freeGears[0].angle += rpmRad;
+                }
+                // Propagate speeds based on mesh distance
+                for (let i = 1; i < freeGears.length; i++) {
+                    const g = freeGears[i];
+                    let driven = false;
+                    for (let j = 0; j < i; j++) {
+                        const other = freeGears[j];
+                        const dist = Math.hypot(g.x - other.x, g.y - other.y);
+                        const meshDist = g.r + other.r;
+                        if (dist < meshDist * 1.12) {
+                            const ratio = other.r / g.r;
+                            g.speed = -other.speed * ratio;
+                            g.angle += g.speed * rpmRad / gearSpeed;
+                            driven = true; break;
+                        }
+                    }
+                    if (!driven) { g.angle += rpmRad * 0.5; g.speed = gearSpeed * 0.5; }
+                }
+                freeGears.forEach((g, i) => {
+                    drawGearShape(gctx, g.x, g.y, g.r, g.teeth, g.angle, g.color);
+                    gctx.fillStyle = 'rgba(255,255,255,.4)'; gctx.font = 'bold 10px Nunito'; gctx.textAlign = 'center';
+                    gctx.fillText(Math.abs(g.speed).toFixed(0) + ' RPM', g.x, g.y + g.r + 16);
+                });
+                gctx.fillStyle = 'rgba(99,179,237,.3)'; gctx.font = 'bold 13px Nunito'; gctx.textAlign = 'center';
+                gctx.fillText('Tap canvas to add gears · Drag to position them', W / 2, areaH - 14);
+            }
+        }
+
+        // ══════════════════════════════════════════
+        //  PANEL 5 — PROJECTILE
+        // ══════════════════════════════════════════
+        const PJC = document.getElementById('projCanvas');
+        const pjctx = PJC.getContext('2d');
+
+        let projAngle = 45;
+        let projPower = 50;
+        let projState = 'ready'; // 'ready','flying','done'
+        let projX = 0, projY = 0, projVX = 0, projVY = 0;
+        let projTrail = [];
+        let projGhostTrail = []; // preview arc
+        let projStartX = 0, projStartY = 0;
+        let projMaxHeight = 0, projRange = 0;
+        const PROJ_G = 0.28;
+        const PROJ_SCALE = 0.05;
+
+        document.getElementById('projAngle').oninput = function () {
+            projAngle = +this.value;
+            if (projState !== 'flying') updateProjPreview();
+        };
+        document.getElementById('projPower').oninput = function () {
+            projPower = +this.value;
+            if (projState !== 'flying') updateProjPreview();
+        };
+
+        function updateProjPreview() {
+            const W = PJC.width, H = PJC.height;
+            const hudH = getHudHeight('p-proj');
+            const groundY = H - hudH - 10;
+            const sx = 60, sy = groundY - 18;
+            projStartX = sx; projStartY = sy;
+            const ang = projAngle * Math.PI / 180;
+            const v = projPower * 0.22;
+            const vx = v * Math.cos(ang), vy = -v * Math.sin(ang);
+            projGhostTrail = [];
+            let px = sx, py = sy, pvx = vx, pvy = vy;
+            for (let i = 0; i < 800; i++) {
+                pvy += PROJ_G;
+                px += pvx; py += pvy;
+                if (i % 3 === 0) projGhostTrail.push({ x: px, y: py });
+                if (py >= groundY) break;
+            }
+        }
+
+        function launchProjectile() {
+            if (projState === 'flying') return;
+            const W = PJC.width, H = PJC.height, hudH = 160;
+            const groundY = H - hudH - 10;
+            projX = 60; projY = groundY - 18;
+            const ang = projAngle * Math.PI / 180;
+            const v = projPower * 0.22;
+            projVX = v * Math.cos(ang);
+            projVY = -v * Math.sin(ang);
+            projTrail = [];
+            projState = 'flying';
+            projMaxHeight = 0;
+            projRange = 0;
+            projStartX = projX; projStartY = projY;
+        }
+
+        function resetProjectile() {
+            projState = 'ready';
+            projTrail = [];
+            projVX = 0; projVY = 0;
+            updateProjPreview();
+        }
+
+        let projTick = 0;
+        function drawProjectile() {
+            requestAnimationFrame(drawProjectile);
+            projTick++;
+            const W = PJC.width, H = PJC.height, hudH = 160;
+            const groundY = H - hudH - 10;
+
+            pjctx.fillStyle = '#0d1117';
+            pjctx.fillRect(0, 0, W, H);
+
+            // Stars background
+            if (projTick === 1 || W !== lastPW) {
+                lastPW = W;
+                projStars = [];
+                for (let i = 0; i < 60; i++) projStars.push({ x: rnd(0, W), y: rnd(0, groundY * .7), r: rnd(.5, 1.5) });
+            }
+            projStars.forEach(s => {
+                pjctx.beginPath(); pjctx.arc(s.x, s.y, s.r, 0, TAU);
+                pjctx.fillStyle = 'rgba(255,255,255,.4)'; pjctx.fill();
+            });
+
+            // Ground
+            pjctx.fillStyle = '#1e3a2e';
+            pjctx.fillRect(0, groundY, W, H - groundY);
+            pjctx.fillStyle = '#2d6a4f';
+            pjctx.fillRect(0, groundY, W, 4);
+
+            // Launcher
+            const ang = projAngle * Math.PI / 180;
+            const lx = 60, ly = groundY;
+            pjctx.save(); pjctx.translate(lx, ly); pjctx.rotate(-ang);
+            pjctx.fillStyle = '#4a5568';
+            pjctx.fillRect(-5, -28, 10, 28);
+            pjctx.fillStyle = '#718096'; pjctx.beginPath(); pjctx.arc(0, -28, 7, 0, TAU); pjctx.fill();
+            pjctx.restore();
+
+            // Ghost trail (preview arc)
+            if (projState !== 'flying' && projGhostTrail.length > 0) {
+                pjctx.beginPath();
+                projGhostTrail.forEach((pt, i) => {
+                    if (pt.y > groundY) return;
+                    i === 0 ? pjctx.moveTo(pt.x, pt.y) : pjctx.lineTo(pt.x, pt.y);
+                });
+                pjctx.strokeStyle = 'rgba(99,179,237,.2)'; pjctx.lineWidth = 2;
+                pjctx.setLineDash([6, 8]); pjctx.stroke(); pjctx.setLineDash([]);
+            }
+
+            // Physics update
+            if (projState === 'flying') {
+                projVY += PROJ_G;
+                projX += projVX; projY += projVY;
+                projTrail.push({ x: projX, y: projY, vx: projVX, vy: projVY });
+                if (projTrail.length > 200) projTrail.shift();
+                const heightM = Math.max(0, (groundY - projY) * PROJ_SCALE);
+                if (heightM > projMaxHeight) projMaxHeight = heightM;
+                projRange = (projX - projStartX) * PROJ_SCALE;
+                if (projY >= groundY - 8) {
+                    projY = groundY - 8; projState = 'done';
+                }
+                document.getElementById('r-vx').textContent = (projVX / PROJ_SCALE * 0.5).toFixed(1) + ' m/s';
+                document.getElementById('r-vy').textContent = (Math.abs(projVY) / PROJ_SCALE * 0.5).toFixed(1) + ' m/s';
+                document.getElementById('r-height').textContent = ((groundY - projY) * PROJ_SCALE).toFixed(1) + ' m';
+                document.getElementById('r-range').textContent = projRange.toFixed(1) + ' m';
+            }
+
+            // Draw trail
+            projTrail.forEach((pt, i) => {
+                const alpha = i / projTrail.length;
+                const hue = 200 + alpha * 60;
+                pjctx.beginPath(); pjctx.arc(pt.x, pt.y, 3 * alpha + 1, 0, TAU);
+                pjctx.fillStyle = `hsla(${hue},80%,65%,${alpha * 0.85})`; pjctx.fill();
+            });
+
+            // Ball
+            if (projState === 'flying' || projState === 'done') {
+                const bgrad = pjctx.createRadialGradient(projX - 3, projY - 3, 0, projX, projY, 10);
+                bgrad.addColorStop(0, '#fff'); bgrad.addColorStop(1, '#63b3ed');
+                pjctx.beginPath(); pjctx.arc(projX, projY, 10, 0, TAU);
+                pjctx.fillStyle = bgrad; pjctx.fill();
+                pjctx.strokeStyle = 'rgba(255,255,255,.5)'; pjctx.lineWidth = 1.5; pjctx.stroke();
+                // Glow
+                pjctx.beginPath(); pjctx.arc(projX, projY, 16, 0, TAU);
+                pjctx.fillStyle = 'rgba(99,179,237,.15)'; pjctx.fill();
+            }
+
+            // Landing marker
+            if (projState === 'done') {
+                pjctx.fillStyle = '#fbbf24';
+                pjctx.font = 'bold 13px Nunito'; pjctx.textAlign = 'center';
+                pjctx.fillText('⚑ Range: ' + projRange.toFixed(1) + 'm | Max Height: ' + projMaxHeight.toFixed(1) + 'm', projX, groundY - 20);
+                pjctx.fillStyle = 'rgba(99,179,237,.5)'; pjctx.font = 'bold 12px Nunito';
+                pjctx.fillText('Tap Reset to try again!', W / 2, 30);
+            }
+
+            // Angle indicator
+            pjctx.fillStyle = 'rgba(246,173,85,.7)';
+            pjctx.font = 'bold 12px Nunito'; pjctx.textAlign = 'left';
+            pjctx.fillText('θ=' + projAngle + '° | v=' + projPower + '%', lx + 30, groundY - 40);
+        }
+
+        let projStars = [], lastPW = 0;
+
+        // ══════════════════════════════════════════
+        //  RESIZE
+        // ══════════════════════════════════════════
+        function resizeAll() {
+            const ids = [['p-force', 'forceCanvas'], ['p-incline', 'inclineCanvas'],
+            ['p-pulley', 'pulleyCanvas'], ['p-gear', 'gearCanvas'], ['p-proj', 'projCanvas']];
+            ids.forEach(([pid, cid]) => {
+                const p = document.getElementById(pid);
+                const c = document.getElementById(cid);
+                c.width = p.clientWidth;
+                c.height = p.clientHeight;
+            });
+            updateProjPreview();
+        }
+        window.addEventListener('resize', () => { resizeAll(); });
+        resizeAll();
+
+        // Start all loops
+        drawForces();
+        drawIncline();
+        drawPulley();
+        drawGears();
+        drawProjectile();
+        updateProjPreview();
+
+        setTimeout(() => {
+            resizeAll();
+            document.getElementById('loader').classList.add('fade');
+            setTimeout(() => document.getElementById('loader').remove(), 700);
+        }, 900);
+    </script>
+</body>
+
+</html>
