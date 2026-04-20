@@ -1,0 +1,79 @@
+services:
+  mongo:
+    image: mongo:noble
+    secrets:
+      - mongo-root-password
+      - mongo-database-password
+    configs:
+      - source: mongo_init
+        target: /docker-entrypoint-initdb.d/init-mongo.js
+        mode: 0755
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo-root-password
+      MONGO_INITDB_DATABASE: scikidz
+      MONGO_INITDB_DATABASE_USERNAME: scikidz_service
+      MONGO_INITDB_DATABASE_PASSWORD_FILE: /run/secrets/mongo-database-password
+    networks:
+      - mongo
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+  mongo-express:
+    image: mongo-express
+    entrypoint: ["/bin/sh", "/configs/mongo-express-entrypoint.sh"]
+    secrets:
+      - mongo-root-password
+      - mongo-express-password
+    configs:
+      - source: mongo-express-entrypoint
+        target: /configs/mongo-express-entrypoint.sh
+        mode: 0755
+    environment:
+      ME_CONFIG_SITE_BASEURL: /db
+      MONGO_HOST: mongo
+      MONGO_PORT: 27017
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD_FILE: /run/secrets/mongo-root-password
+      ME_CONFIG_BASICAUTH_ENABLED: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      MONGO_EXPRESS_PASSWORD_FILE: /run/secrets/mongo-express-password
+    networks:
+      - mongo
+      - proxy
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+secrets:
+  mongo-root-password:
+    file: ./secrets/mongo-root-password
+  mongo-database-password:
+    file: ./secrets/mongo-database-password
+  mongo-express-password:
+    file: ./secrets/mongo-express-password
+configs:
+  mongo_init:
+    file: ./configs/mongo-init.js
+  mongo-express-entrypoint:
+    file: ./configs/mongo-express-entrypoint.sh
+volumes:
+  mongodb-data:
+networks:
+  mongo:
+    driver: overlay
+    attachable: true
+  proxy:
+    external: true

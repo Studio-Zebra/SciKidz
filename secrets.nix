@@ -1,7 +1,7 @@
 let
   secretsFunction = {lib, ...}: let
     users = {
-      soriphoono = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEgxxFcqHVwYhY0TjbsqByOYpmWXqzlVyGzpKjqS8mO7";
+      soriphoono = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMsLDpds7sJGuczBvZEIkqEBwjdk22MbiML/WYzHwzkT";
       mrcomethru = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDtPcB9LhIa4NhnXbaUHY8b9Hz2djhSGvw8x8Ve/8WEi";
     };
 
@@ -15,7 +15,6 @@ let
       default = {
         users = ["soriphoono" "mrcomethru"];
         secrets = [
-          "cluster-key"
         ];
       };
     };

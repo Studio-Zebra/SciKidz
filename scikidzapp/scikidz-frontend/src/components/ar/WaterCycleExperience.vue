@@ -1,21 +1,29 @@
-<!-- src/components/ar/WaterCycleExperience.vue -->
 <template>
-    <div class="tag">Water Cycle AR Placeholder</div>
-  </template>
-  
-  <style scoped>
-  .experience {
-    position: absolute;
-    inset: 0;
-  }
-  .label {
-    position: absolute;
-    left: 16px;
-    top: 70px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: rgba(0,0,0,0.45);
-    color: white;
-    font-weight: 800;
-  }
-  </style>
+  <div class="experience">
+    <iframe
+      class="experience-frame"
+      src="/ar/water-cycle-explorer.html"
+      title="Water Cycle 3D Experience"
+      loading="eager"
+      allowfullscreen
+    />
+  </div>
+</template>
+
+<style scoped>
+.experience {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.experience-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
+</style>

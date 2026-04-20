@@ -1,9 +1,11 @@
 keys:
   - &admin_soriphoono age1y4x8gzzcdhxvqaf9matt0eze3z3yxwx607avq4cexfkgwal4psesj39lvn
   - &admin_mrcomethru age1ntv8953h59kfumwwwytyq478937276huqwnc30n9m7h6pzy3ednq82gj0t
+  - &cluster_scikidz age13efxykr6zk4s2pyvwu7zeuuh8pzq8d9q2qw8jtyqufjaq9zclumsg450ry
 creation_rules:
-  - path_regex: secrets\.*
+  - path_regex: docker/.+/secrets/.*
     key_groups:
       - age:
           - *admin_soriphoono
           - *admin_mrcomethru
+          - *cluster_scikidz

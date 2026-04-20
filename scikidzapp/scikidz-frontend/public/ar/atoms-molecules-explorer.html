@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Atoms & Molecules Explorer ⚛️</title>
+    <style>
+        :root {
+            --bottom-safe: 80px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #0a0e1a;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            touch-action: none;
+            color: #fff;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #c {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+
+        /* NAV TABS */
+        #tabs {
+            position: fixed;
+            top: 0;
+            left: 64px;
+            right: 0;
+            z-index: 60;
+            display: flex;
+            gap: 0;
+            background: rgba(8, 12, 30, 0.97);
+            border-bottom: 2px solid rgba(100, 160, 255, 0.18);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-right: 10px;
+        }
+
+        #tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab {
+            flex: 0 0 auto;
+            padding: 11px 10px 9px;
+            font-family: inherit;
+            font-size: 0.74rem;
+            color: rgba(255, 255, 255, 0.45);
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+            transition: all .25s;
+            letter-spacing: .3px;
+        }
+
+        .tab.active {
+            color: #7dd3fc;
+            border-bottom-color: #7dd3fc;
+        }
+
+        /* SECTION PANELS */
+        .panel {
+            position: fixed;
+            inset: 0;
+            top: 44px;
+            z-index: 10;
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* ─── ATOM BUILDER ─── */
+        #p-atom canvas {
+            position: absolute;
+            inset: 0;
+        }
+
+        #atom-hud {
+            position: absolute;
+            bottom: var(--bottom-safe);
+            left: 0;
+            right: 0;
+            background: linear-gradient(0deg, rgba(8, 12, 30, .97) 0%, rgba(8, 12, 30, .85) 80%, transparent 100%);
+            padding: 14px 16px 28px;
+            z-index: 20;
+        }
+
+        .atom-name {
+            font-family: inherit;
+            font-size: 1.9rem;
+            color: #7dd3fc;
+            text-align: center;
+            margin-bottom: 2px;
+            text-shadow: 0 0 20px rgba(125, 211, 252, .5);
+        }
+
+        .atom-sub {
+            text-align: center;
+            font-size: .75rem;
+            color: #94a3b8;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .ctrl-box {
+            background: rgba(255, 255, 255, .06);
+            border: 1.5px solid rgba(255, 255, 255, .12);
+            border-radius: 14px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 130px;
+        }
+
+        .ctrl-label {
+            font-size: .68rem;
+            font-weight: 800;
+            color: #94a3b8;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            flex: 1;
+        }
+
+        .ctrl-val {
+            font-family: inherit;
+            font-size: 1.2rem;
+            color: #fff;
+            min-width: 22px;
+            text-align: center;
+        }
+
+        .btn-sm {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform .1s;
+        }
+
+        .btn-sm:active {
+            transform: scale(.88);
+        }
+
+        .btn-plus {
+            background: rgba(125, 211, 252, .2);
+            color: #7dd3fc;
+        }
+
+        .btn-minus {
+            background: rgba(255, 100, 100, .15);
+            color: #f87171;
+        }
+
+        #nucleus-zoom-btn {
+            margin: 10px auto 0;
+            display: block;
+            background: rgba(168, 85, 247, .2);
+            border: 1.5px solid rgba(168, 85, 247, .4);
+            color: #c084fc;
+            font-family: inherit;
+            font-size: .85rem;
+            padding: 7px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        #nucleus-zoom-btn:hover {
+            background: rgba(168, 85, 247, .35);
+        }
+
+        /* ─── MOLECULE BUILDER ─── */
+        #p-mol canvas {
+            position: absolute;
+            inset: 0;
+        }
+
+        #mol-palette {
+            position: absolute;
+            left: 0;
+            top: 64px;
+            bottom: 120px;
+            width: 70px;
+            background: rgba(8, 12, 30, .92);
+            border-right: 1.5px solid rgba(100, 160, 255, .15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 0;
+            overflow-y: auto;
+            z-index: 20;
+        }
+
+        .palette-atom {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            border: 2.5px solid transparent;
+            transition: all .2s;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .4);
+        }
+
+        .palette-atom.selected {
+            border-color: #fff;
+            transform: scale(1.12);
+            box-shadow: 0 0 16px rgba(255, 255, 255, .4);
+        }
+
+        #mol-toolbar {
+            position: absolute;
+            bottom: var(--bottom-safe);
+            left: 0;
+            right: 0;
+            height: 110px;
+            background: rgba(8, 12, 30, .95);
+            border-top: 1.5px solid rgba(100, 160, 255, .15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            z-index: 20;
+        }
+
+        .mol-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mol-btn {
+            background: rgba(255, 255, 255, .08);
+            border: 1.5px solid rgba(255, 255, 255, .18);
+            color: #fff;
+            font-family: inherit;
+            font-size: .8rem;
+            padding: 7px 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+
+        .mol-btn:hover {
+            background: rgba(255, 255, 255, .15);
+        }
+
+        .mol-btn.danger {
+            border-color: rgba(248, 113, 113, .4);
+            color: #f87171;
+        }
+
+        .mol-btn.success {
+            border-color: rgba(74, 222, 128, .4);
+            color: #4ade80;
+        }
+
+        #mol-status {
+            font-size: .75rem;
+            color: #94a3b8;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        #mol-recipe {
+            position: absolute;
+            top: 8px;
+            left: 75px;
+            right: 0;
+            display: flex;
+            gap: 6px;
+            padding: 0 8px;
+            overflow-x: auto;
+            z-index: 20;
+        }
+
+        .recipe-chip {
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .15);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: .7rem;
+            font-weight: 800;
+            color: #cbd5e1;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .recipe-chip:hover {
+            background: rgba(125, 211, 252, .15);
+            color: #7dd3fc;
+        }
+
+        .recipe-chip.active-recipe {
+            background: rgba(125, 211, 252, .2);
+            border-color: #7dd3fc;
+            color: #7dd3fc;
+        }
+
+        /* ─── BOND TYPES ─── */
+        #p-bond {
+            overflow-y: auto;
+            background: #0a0e1a;
+        }
+
+        #p-bond canvas {
+            position: absolute;
+            inset: 0;
+        }
+
+        #bond-hud {
+            position: absolute;
+            bottom: var(--bottom-safe);
+            left: 0;
+            right: 0;
+            background: linear-gradient(0deg, rgba(8, 12, 30, .97), rgba(8, 12, 30, .8) 80%, transparent);
+            padding: 12px 14px 26px;
+            z-index: 20;
+        }
+
+        .bond-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+            justify-content: center;
+        }
+
+        .bond-tab {
+            background: rgba(255, 255, 255, .07);
+            border: 1.5px solid rgba(255, 255, 255, .14);
+            color: rgba(255, 255, 255, .5);
+            font-family: inherit;
+            font-size: .78rem;
+            padding: 6px 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .bond-tab.active {
+            background: rgba(125, 211, 252, .18);
+            border-color: #7dd3fc;
+            color: #7dd3fc;
+        }
+
+        .bond-info {
+            text-align: center;
+        }
+
+        .bond-info-title {
+            font-family: inherit;
+            font-size: 1.25rem;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+
+        .bond-info-text {
+            font-size: .8rem;
+            color: #94a3b8;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        /* ─── BREAK MODE ─── */
+        #p-break canvas {
+            position: absolute;
+            inset: 0;
+        }
+
+        #break-hud {
+            position: absolute;
+            bottom: var(--bottom-safe);
+            left: 0;
+            right: 0;
+            background: linear-gradient(0deg, rgba(8, 12, 30, .97), transparent);
+            padding: 14px 16px 28px;
+            z-index: 20;
+            text-align: center;
+        }
+
+        #break-status {
+            font-family: inherit;
+            font-size: 1.1rem;
+            color: #fb923c;
+            margin-bottom: 8px;
+        }
+
+        #break-info {
+            font-size: .8rem;
+            color: #94a3b8;
+            font-weight: 600;
+            line-height: 1.5;
+            max-width: 340px;
+            margin: 0 auto;
+        }
+
+        .break-mol-btns {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ─── INFO CARD (shared) ─── */
+        #infoCard {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 600px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #0d2137, #0a3d62);
+            border-radius: 24px 24px 0 0;
+            border-top: 3px solid rgba(100, 200, 255, .3);
+            padding: 18px 20px 30px;
+            z-index: 200;
+            transform: translateY(110%);
+            transition: transform .4s cubic-bezier(.22, 1, .36, 1);
+            box-shadow: 0 -8px 40px rgba(0, 0, 0, .6);
+        }
+
+        #infoCard.open {
+            transform: translateY(0);
+        }
+
+        .ic-handle {
+            width: 38px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, .2);
+            margin: 0 auto 14px;
+        }
+
+        .ic-top {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .ic-emoji {
+            font-size: 2.4rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .ic-step {
+            font-size: .62rem;
+            font-weight: 800;
+            color: #4fc3f7;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .ic-title {
+            font-family: inherit;
+            font-size: 1.4rem;
+            color: #fff;
+        }
+
+        .ic-text {
+            font-size: .85rem;
+            color: #b0cfe8;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        #icClose {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: rgba(255, 255, 255, .1);
+            border: none;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: .9rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* LOADER */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #0a0e1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            transition: opacity .6s;
+        }
+
+        #loader.fade {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .ld-title {
+            font-family: inherit;
+            font-size: 2rem;
+            color: #7dd3fc;
+            margin-bottom: 6px;
+        }
+
+        .ld-sub {
+            color: #64748b;
+            font-size: .88rem;
+            font-weight: 700;
+        }
+
+        .ld-spin {
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(125, 211, 252, .15);
+            border-top-color: #7dd3fc;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin-bottom: 18px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* NUCLEUS MODAL */
+        #nucleusModal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .85);
+            z-index: 250;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s;
+        }
+
+        #nucleusModal.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #nucleusInner {
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            border: 2px solid rgba(168, 85, 247, .3);
+            border-radius: 24px;
+            padding: 20px;
+            max-width: 340px;
+            width: 90%;
+            position: relative;
+        }
+
+        #nucleusCanvas {
+            width: 100%;
+            height: 200px;
+            border-radius: 14px;
+            background: #000;
+            display: block;
+        }
+
+        .nuc-title {
+            font-family: inherit;
+            font-size: 1.3rem;
+            color: #c084fc;
+            margin: 10px 0 4px;
+            text-align: center;
+        }
+
+        .nuc-text {
+            font-size: .8rem;
+            color: #94a3b8;
+            font-weight: 600;
+            line-height: 1.55;
+            text-align: center;
+        }
+
+        #nucleusClose {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            background: rgba(255, 255, 255, .1);
+            border: none;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: 900;
+            font-size: .9rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loader">
+        <div class="ld-spin"></div>
+        <div class="ld-title">⚛️ Atoms & Molecules</div>
+        <div class="ld-sub">Building your 3D lab…</div>
+    </div>
+
+    <!-- NAV TABS -->
+    <div id="tabs">
+        <div class="tab active" data-panel="p-atom">⚛️ Atom Builder</div>
+        <div class="tab" data-panel="p-mol">🧩 Molecule Builder</div>
+        <div class="tab" data-panel="p-bond">🔗 Bond Types</div>
+        <div class="tab" data-panel="p-break">💥 Break Mode</div>
+    </div>
+
+    <!-- ═══ PANEL 1: ATOM BUILDER ═══ -->
+    <div class="panel active" id="p-atom">
+        <canvas id="atomCanvas"></canvas>
+        <div id="atom-hud">
+            <div class="atom-name" id="atomName">Hydrogen</div>
+            <div class="atom-sub" id="atomSub">1 proton · Symbol: H · Atomic #1</div>
+            <div class="controls-row">
+                <div class="ctrl-box">
+                    <span class="ctrl-label" style="color:#f87171">Protons</span>
+                    <button class="btn-sm btn-minus" onclick="changeAtom('p',-1)">−</button>
+                    <span class="ctrl-val" id="pCount">1</span>
+                    <button class="btn-sm btn-plus" onclick="changeAtom('p',1)">+</button>
+                </div>
+                <div class="ctrl-box">
+                    <span class="ctrl-label" style="color:#94a3b8">Neutrons</span>
+                    <button class="btn-sm btn-minus" onclick="changeAtom('n',-1)">−</button>
+                    <span class="ctrl-val" id="nCount">0</span>
+                    <button class="btn-sm btn-plus" onclick="changeAtom('n',1)">+</button>
+                </div>
+                <div class="ctrl-box">
+                    <span class="ctrl-label" style="color:#7dd3fc">Electrons</span>
+                    <button class="btn-sm btn-minus" onclick="changeAtom('e',-1)">−</button>
+                    <span class="ctrl-val" id="eCount">1</span>
+                    <button class="btn-sm btn-plus" onclick="changeAtom('e',1)">+</button>
+                </div>
+            </div>
+            <button id="nucleus-zoom-btn" onclick="openNucleus()">🔬 Zoom Into Nucleus</button>
+        </div>
+    </div>
+
+    <!-- ═══ PANEL 2: MOLECULE BUILDER ═══ -->
+    <div class="panel" id="p-mol">
+        <canvas id="molCanvas"></canvas>
+        <div id="mol-recipe"></div>
+        <div id="mol-palette"></div>
+        <div id="mol-toolbar">
+            <div id="mol-status">Select an atom from the palette, then tap the canvas to place it</div>
+            <div class="mol-btns">
+                <button class="mol-btn danger" onclick="clearMolecule()">🗑 Clear</button>
+                <button class="mol-btn" onclick="autoConnect()">🔗 Auto-Bond</button>
+                <button class="mol-btn success" onclick="checkMolecule()">✓ Check</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ PANEL 3: BOND TYPES ═══ -->
+    <div class="panel" id="p-bond">
+        <canvas id="bondCanvas"></canvas>
+        <div id="bond-hud">
+            <div class="bond-tabs">
+                <div class="bond-tab active" onclick="setBondType(0)">Single</div>
+                <div class="bond-tab" onclick="setBondType(1)">Double</div>
+                <div class="bond-tab" onclick="setBondType(2)">Triple</div>
+                <div class="bond-tab" onclick="setBondType(3)">Ionic</div>
+            </div>
+            <div class="bond-info">
+                <div class="bond-info-title" id="bondTitle">Single Bond</div>
+                <div class="bond-info-text" id="bondText">Two atoms share 1 pair of electrons. This is the simplest bond
+                    — like H–H in hydrogen gas. The atoms are held together but can rotate around the bond.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ PANEL 4: BREAK MODE ═══ -->
+    <div class="panel" id="p-break">
+        <canvas id="breakCanvas"></canvas>
+        <div id="break-hud">
+            <div class="break-mol-btns">
+                <button class="mol-btn" onclick="setBreakMol('H2O')">💧 H₂O</button>
+                <button class="mol-btn" onclick="setBreakMol('CO2')">🌫️ CO₂</button>
+                <button class="mol-btn" onclick="setBreakMol('O2')">💨 O₂</button>
+            </div>
+            <div id="break-status">👆 Tap the molecule to break it apart!</div>
+            <div id="break-info">When bonds break, energy is either released or absorbed. This is the foundation of all
+                chemical reactions!</div>
+        </div>
+    </div>
+
+    <!-- INFO CARD -->
+    <div id="infoCard">
+        <div class="ic-handle"></div>
+        <button id="icClose">✕</button>
+        <div class="ic-top">
+            <div class="ic-emoji" id="icEmoji">⚛️</div>
+            <div>
+                <div class="ic-step" id="icStep"></div>
+                <div class="ic-title" id="icTitle"></div>
+            </div>
+        </div>
+        <div class="ic-text" id="icText"></div>
+    </div>
+
+    <!-- NUCLEUS MODAL -->
+    <div id="nucleusModal">
+        <div id="nucleusInner">
+            <button id="nucleusClose" onclick="closeNucleus()">✕</button>
+            <canvas id="nucleusCanvas"></canvas>
+            <div class="nuc-title">🔬 Inside the Nucleus</div>
+            <div class="nuc-text" id="nucleusText">The nucleus contains protons and neutrons held together by the
+                <strong style="color:#c084fc">Strong Nuclear Force</strong> — the most powerful force in nature! It's
+                100x stronger than electromagnetism and keeps the nucleus from flying apart.
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ═══════════════════════════════════════════════════
+        //  UTILITIES
+        // ═══════════════════════════════════════════════════
+        function rnd(a, b) { return a + Math.random() * (b - a); }
+        function lerp(a, b, t) { return a + (b - a) * t; }
+        function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+        function notifyParentOverlayState(isOpen) {
+            window.parent.postMessage(
+                {
+                    type: 'scikidz-ar-overlay',
+                    open: isOpen,
+                },
+                window.location.origin
+            )
+        }
+
+        const ELEMENT_DATA = [
+            null, // index 0 unused
+            { name: 'Hydrogen', sym: 'H', color: 0xfafafa, shells: [1] },
+            { name: 'Helium', sym: 'He', color: 0xffd700, shells: [2] },
+            { name: 'Lithium', sym: 'Li', color: 0xff6b6b, shells: [2, 1] },
+            { name: 'Beryllium', sym: 'Be', color: 0xffa07a, shells: [2, 2] },
+            { name: 'Boron', sym: 'B', color: 0x90ee90, shells: [2, 3] },
+            { name: 'Carbon', sym: 'C', color: 0x888888, shells: [2, 4] },
+            { name: 'Nitrogen', sym: 'N', color: 0x4169e1, shells: [2, 5] },
+            { name: 'Oxygen', sym: 'O', color: 0xff4444, shells: [2, 6] },
+            { name: 'Fluorine', sym: 'F', color: 0x00ced1, shells: [2, 7] },
+            { name: 'Neon', sym: 'Ne', color: 0xff69b4, shells: [2, 8] },
+            { name: 'Sodium', sym: 'Na', color: 0xffa500, shells: [2, 8, 1] },
+            { name: 'Magnesium', sym: 'Mg', color: 0x7fffd4, shells: [2, 8, 2] },
+            { name: 'Aluminum', sym: 'Al', color: 0xb0c4de, shells: [2, 8, 3] },
+            { name: 'Silicon', sym: 'Si', color: 0x4682b4, shells: [2, 8, 4] },
+            { name: 'Phosphorus', sym: 'P', color: 0xff8c00, shells: [2, 8, 5] },
+            { name: 'Sulfur', sym: 'S', color: 0xffff00, shells: [2, 8, 6] },
+            { name: 'Chlorine', sym: 'Cl', color: 0x7fff00, shells: [2, 8, 7] },
+            { name: 'Argon', sym: 'Ar', color: 0xee82ee, shells: [2, 8, 8] },
+        ];
+
+        // ═══════════════════════════════════════════════════
+        //  TAB SWITCHING
+        // ═══════════════════════════════════════════════════
+        document.querySelectorAll('.tab').forEach(t => {
+            t.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+
+                t.classList.add('active');
+                const panelId = t.dataset.panel;
+                document.getElementById(panelId).classList.add('active');
+
+                requestAnimationFrame(() => {
+                    if (panelId === 'p-atom' && typeof resizeAtomCanvas === 'function') resizeAtomCanvas();
+                    if (panelId === 'p-mol' && typeof resizeMolCanvas === 'function') resizeMolCanvas();
+                    if (panelId === 'p-bond' && typeof resizeBondCanvas === 'function') resizeBondCanvas();
+                    if (panelId === 'p-break' && typeof resizeBreakCanvas === 'function') resizeBreakCanvas();
+                });
+            });
+        });
+
+        // ═══════════════════════════════════════════════════
+        //  INFO CARD
+        // ═══════════════════════════════════════════════════
+        function showCard(emoji, step, title, text) {
+            document.getElementById('icEmoji').textContent = emoji;
+            document.getElementById('icStep').textContent = step;
+            document.getElementById('icTitle').textContent = title;
+            document.getElementById('icText').textContent = text;
+
+            document.getElementById('infoCard').classList.add('open');
+            notifyParentOverlayState(true);
+        }
+        document.getElementById('icClose').onclick = () => {
+            document.getElementById('infoCard').classList.remove('open');
+            notifyParentOverlayState(false);
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  ═══ PANEL 1: ATOM BUILDER ═══
+        // ═══════════════════════════════════════════════════
+        const atomCanvas = document.getElementById('atomCanvas');
+        function resizeAtomCanvas() {
+            const p = document.getElementById('p-atom');
+            atomCanvas.width = p.clientWidth;
+            atomCanvas.height = p.clientHeight;
+            atomRenderer.setSize(atomCanvas.clientWidth, atomCanvas.clientHeight);
+            atomCamera.aspect = atomCanvas.clientWidth / atomCanvas.clientHeight;
+            atomCamera.updateProjectionMatrix();
+        }
+
+        const atomRenderer = new THREE.WebGLRenderer({ canvas: atomCanvas, antialias: true });
+        atomRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        atomRenderer.setClearColor(0x0a0e1a);
+
+        const atomScene = new THREE.Scene();
+        const atomCamera = new THREE.PerspectiveCamera(50, 1, .1, 100);
+        atomCamera.position.set(0, 0, 14);
+
+        atomScene.add(new THREE.AmbientLight(0x334466, 1.2));
+        const atomSunLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        atomSunLight.position.set(5, 8, 5);
+        atomScene.add(atomSunLight);
+        const atomFill = new THREE.PointLight(0x4488ff, 0.8, 30);
+        atomFill.position.set(-4, 0, 4);
+        atomScene.add(atomFill);
+
+        // State
+        let atomState = { p: 1, n: 0, e: 1 };
+        let nucleusMeshes = [], orbitGroups = [], electronMeshes = [];
+
+        function getNucleusMat(type) {
+            if (type === 'p') return new THREE.MeshLambertMaterial({ color: 0xff4444, emissive: 0x441111 });
+            return new THREE.MeshLambertMaterial({ color: 0x888888, emissive: 0x222222 });
+        }
+        const eGeo = new THREE.SphereGeometry(0.22, 8, 6);
+
+        function buildAtom() {
+            // Clear old
+            nucleusMeshes.forEach(m => atomScene.remove(m));
+            orbitGroups.forEach(g => atomScene.remove(g));
+            nucleusMeshes = []; orbitGroups = []; electronMeshes = [];
+
+            const totalNP = atomState.p + atomState.n;
+
+            // ── NUCLEUS ──
+            const spread = Math.cbrt(totalNP) * 0.42;
+            for (let i = 0; i < atomState.p; i++) {
+                const g = new THREE.SphereGeometry(0.32, 8, 6);
+                const m = new THREE.Mesh(g, getNucleusMat('p'));
+                m.position.set(rnd(-spread, spread), rnd(-spread, spread), rnd(-spread, spread));
+                atomScene.add(m); nucleusMeshes.push(m);
+            }
+            for (let i = 0; i < atomState.n; i++) {
+                const g = new THREE.SphereGeometry(0.32, 8, 6);
+                const m = new THREE.Mesh(g, getNucleusMat('n'));
+                m.position.set(rnd(-spread, spread), rnd(-spread, spread), rnd(-spread, spread));
+                atomScene.add(m); nucleusMeshes.push(m);
+            }
+
+            // Nucleus glow halo
+            if (totalNP > 0) {
+                const hg = new THREE.SphereGeometry(spread + 0.6, 12, 8);
+                const hm = new THREE.Mesh(hg, new THREE.MeshBasicMaterial({
+                    color: 0xff8844, transparent: true, opacity: 0.08, side: THREE.BackSide
+                }));
+                atomScene.add(hm); nucleusMeshes.push(hm);
+            }
+
+            // ── ELECTRONS ON SHELLS ──
+            const el = atomState.e;
+            const shellDef = [2, 8, 8, 18];
+            let remaining = el;
+            let shellIdx = 0;
+            while (remaining > 0 && shellIdx < 4) {
+                const count = Math.min(remaining, shellDef[shellIdx]);
+                const radius = 2.5 + shellIdx * 1.8;
+                const speed = 0.012 / (shellIdx + 1) * 2.2;
+
+                // Orbit ring
+                const ringGeo = new THREE.TorusGeometry(radius, 0.035, 6, 64);
+                const ringMat = new THREE.MeshBasicMaterial({ color: 0x334466, transparent: true, opacity: 0.4 });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.rotation.x = Math.PI / 2 + rnd(-0.3, 0.3) * shellIdx;
+                ring.rotation.z = rnd(-0.3, 0.3) * shellIdx;
+                atomScene.add(ring); orbitGroups.push(ring);
+
+                // Electrons on this shell
+                const elColor = shellIdx === 0 ? 0x7dd3fc : shellIdx === 1 ? 0xa78bfa : shellIdx === 2 ? 0x34d399 : 0xfbbf24;
+                for (let e = 0; e < count; e++) {
+                    const angle = (e / count) * Math.PI * 2;
+                    const pivot = new THREE.Object3D();
+                    pivot.rotation.copy(ring.rotation);
+                    pivot.userData.speed = speed * (1 + rnd(-0.1, 0.1));
+                    pivot.userData.angle = angle;
+                    pivot.userData.radius = radius;
+                    pivot.userData.shellIdx = shellIdx;
+                    atomScene.add(pivot); orbitGroups.push(pivot);
+
+                    const em = new THREE.Mesh(eGeo, new THREE.MeshLambertMaterial({ color: elColor, emissive: new THREE.Color(elColor).multiplyScalar(0.4) }));
+                    pivot.add(em);
+                    em.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius * 0.1, Math.sin(angle) * radius);
+                    electronMeshes.push({ pivot, mesh: em, angle, radius, shell: shellIdx, ring });
+                    // Click
+                    em.userData.shellIdx = shellIdx;
+                }
+                remaining -= count;
+                shellIdx++;
+            }
+            updateAtomHUD();
+        }
+
+        function updateAtomHUD() {
+            const p = atomState.p;
+            const el = p >= 1 && p < ELEMENT_DATA.length ? ELEMENT_DATA[p] : null;
+            document.getElementById('atomName').textContent = el ? el.name : `Element (${p}p)`;
+            document.getElementById('atomSub').textContent =
+                `${atomState.p} proton${atomState.p !== 1 ? 's' : ''} · ${atomState.n} neutron${atomState.n !== 1 ? 's' : ''} · ${atomState.e} electron${atomState.e !== 1 ? 's' : ''}${el ? ' · Symbol: ' + el.sym + ' · Atomic #' + p : ''}`;
+            document.getElementById('pCount').textContent = atomState.p;
+            document.getElementById('nCount').textContent = atomState.n;
+            document.getElementById('eCount').textContent = atomState.e;
+        }
+
+        function changeAtom(type, delta) {
+            if (type === 'p') atomState.p = clamp(atomState.p + delta, 1, 18);
+            if (type === 'n') atomState.n = clamp(atomState.n + delta, 0, 20);
+            if (type === 'e') atomState.e = clamp(atomState.e + delta, 0, 18);
+            buildAtom();
+        }
+
+        // Raycasting electrons for click
+        const atomRay = new THREE.Raycaster();
+        const atomMouse = new THREE.Vector2();
+        let atomDragStart = { x: 0, y: 0 };
+        atomCanvas.addEventListener('pointerdown', e => { atomDragStart = { x: e.clientX, y: e.clientY }; });
+        atomCanvas.addEventListener('pointerup', e => {
+            if (Math.hypot(e.clientX - atomDragStart.x, e.clientY - atomDragStart.y) > 6) return;
+            atomMouse.x = (e.clientX / atomCanvas.clientWidth) * 2 - 1;
+            atomMouse.y = -(e.clientY / atomCanvas.clientHeight) * 2 + 1;
+            atomRay.setFromCamera(atomMouse, atomCamera);
+            const hits = atomRay.intersectObjects(electronMeshes.map(e => e.mesh));
+            if (hits.length > 0) {
+                const si = hits[0].object.userData.shellIdx;
+                const shellNames = ['First (K)', 'Second (L)', 'Third (M)', 'Fourth (N)'];
+                const speeds = ['fastest — closest to nucleus', 'fast', 'moderate', 'slowest — farthest from nucleus'];
+                showCard('⚡', 'ENERGY LEVELS', `Shell ${si + 1}: ${shellNames[si]}`,
+                    `Electrons in shell ${si + 1} orbit at the ${speeds[si]} energy level. The closer an electron is to the nucleus, the more energy it takes to remove it. Electrons prefer the lowest available energy level — like water finding the lowest ground! 🌊`);
+            }
+        });
+
+        // Atom builder animate
+        let atomTick = 0;
+        function animateAtom() {
+            requestAnimationFrame(animateAtom);
+            atomTick++;
+            electronMeshes.forEach(ed => {
+                ed.angle += ed.pivot.userData.speed;
+                const r = ed.radius;
+                const tiltX = ed.ring.rotation.x - Math.PI / 2;
+                const tiltZ = ed.ring.rotation.z;
+                const x = Math.cos(ed.angle) * r;
+                const z = Math.sin(ed.angle) * r;
+                // Apply ring tilt
+                const cosX = Math.cos(tiltX), sinX = Math.sin(tiltX);
+                const cosZ = Math.cos(tiltZ), sinZ = Math.sin(tiltZ);
+                ed.mesh.position.set(
+                    x * cosZ - z * sinX * sinZ,
+                    z * cosX,
+                    x * sinZ + z * sinX * cosZ
+                );
+            });
+            // Nucleus pulse
+            nucleusMeshes.forEach((m, i) => {
+                if (i < nucleusMeshes.length - 1) {
+                    m.position.x += Math.sin(atomTick * 0.04 + i * 1.3) * 0.003;
+                    m.position.y += Math.cos(atomTick * 0.035 + i * 0.9) * 0.003;
+                }
+            });
+            atomRenderer.render(atomScene, atomCamera);
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  NUCLEUS ZOOM MODAL
+        // ═══════════════════════════════════════════════════
+        const nucCanvas = document.getElementById('nucleusCanvas');
+        const nucRenderer = new THREE.WebGLRenderer({ canvas: nucCanvas, antialias: true });
+        nucRenderer.setClearColor(0x000000);
+        const nucScene = new THREE.Scene();
+        const nucCamera = new THREE.PerspectiveCamera(50, nucCanvas.clientWidth / nucCanvas.clientHeight || 2, .1, 50);
+        nucCamera.position.set(0, 0, 6);
+        nucScene.add(new THREE.AmbientLight(0x442244, 1.2));
+        nucScene.add(new THREE.PointLight(0xff44ff, 1.2, 15));
+        nucScene.add(new THREE.PointLight(0x4488ff, 0.8, 15));
+
+        let nucMeshes = [];
+        let nucAnimating = false;
+        function openNucleus() {
+            document.getElementById('nucleusModal').classList.add('open');
+            nucCanvas.width = nucCanvas.parentElement.clientWidth - 40;
+            nucCanvas.height = 200;
+            nucRenderer.setSize(nucCanvas.width, nucCanvas.height);
+            nucCamera.aspect = nucCanvas.width / nucCanvas.height;
+            nucCamera.updateProjectionMatrix();
+            // Build nucleus
+            nucMeshes.forEach(m => nucScene.remove(m)); nucMeshes = [];
+            const total = atomState.p + atomState.n;
+            const n = Math.min(total, 12);
+            const sp = Math.cbrt(n) * 0.55;
+            for (let i = 0; i < Math.min(atomState.p, n); i++) {
+                const m = new THREE.Mesh(new THREE.SphereGeometry(0.38, 10, 8),
+                    new THREE.MeshLambertMaterial({ color: 0xff4444, emissive: 0x551100 }));
+                m.position.set(rnd(-sp, sp), rnd(-sp, sp), rnd(-sp, sp));
+                m.userData.vel = new THREE.Vector3(rnd(-.015, .015), rnd(-.015, .015), rnd(-.015, .015));
+                nucScene.add(m); nucMeshes.push(m);
+            }
+            for (let i = 0; i < Math.min(atomState.n, n - Math.min(atomState.p, n)); i++) {
+                const m = new THREE.Mesh(new THREE.SphereGeometry(0.38, 10, 8),
+                    new THREE.MeshLambertMaterial({ color: 0x888888, emissive: 0x222222 }));
+                m.position.set(rnd(-sp, sp), rnd(-sp, sp), rnd(-sp, sp));
+                m.userData.vel = new THREE.Vector3(rnd(-.015, .015), rnd(-.015, .015), rnd(-.015, .015));
+                nucScene.add(m); nucMeshes.push(m);
+            }
+            document.getElementById('nucleusText').innerHTML =
+                `The nucleus has <strong style="color:#f87171">${atomState.p} proton${atomState.p !== 1 ? 's' : ''}</strong> and <strong style="color:#94a3b8">${atomState.n} neutron${atomState.n !== 1 ? 's' : ''}</strong>. They're held together by the <strong style="color:#c084fc">Strong Nuclear Force</strong> — the most powerful force in nature! It's 100× stronger than electromagnetism and keeps the nucleus from flying apart.`;
+            nucAnimating = true;
+            animateNucleus();
+        }
+        function closeNucleus() {
+            document.getElementById('nucleusModal').classList.remove('open');
+            nucAnimating = false;
+        }
+        function animateNucleus() {
+            if (!nucAnimating) return;
+            requestAnimationFrame(animateNucleus);
+            nucMeshes.forEach(m => {
+                if (!m.userData.vel) return;
+                m.position.addScaledVector(m.userData.vel, 1);
+                const dist = m.position.length();
+                if (dist > 1.5) { m.userData.vel.multiplyScalar(-0.85); }
+            });
+            nucRenderer.render(nucScene, nucCamera);
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  ═══ PANEL 2: MOLECULE BUILDER ═══
+        // ═══════════════════════════════════════════════════
+        function resizeMolCanvas() {
+            const p = document.getElementById('p-mol');
+            molCanvas.width = p.clientWidth;
+            molCanvas.height = p.clientHeight;
+            molRenderer.setSize(molCanvas.clientWidth, molCanvas.clientHeight);
+            molCamera.aspect = molCanvas.clientWidth / molCanvas.clientHeight;
+            molCamera.updateProjectionMatrix();
+        }
+
+        const molCanvas = document.getElementById('molCanvas');
+        const molRenderer = new THREE.WebGLRenderer({ canvas: molCanvas, antialias: true, alpha: true });
+        molRenderer.setClearColor(0x0a0e1a);
+        molRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        const molScene = new THREE.Scene();
+        const molCamera = new THREE.PerspectiveCamera(50, 1, .1, 100);
+        molCamera.position.set(0, 0, 16);
+        molScene.add(new THREE.AmbientLight(0x334466, 1.3));
+        molScene.add(new THREE.DirectionalLight(0xffffff, 0.9));
+
+        const ATOM_COLORS = { H: 0xfafafa, O: 0xff4444, C: 0x777777, N: 0x4169e1, Cl: 0x7fff00, Na: 0xffa500 };
+        const ATOM_SIZES = { H: 0.55, O: 0.8, C: 0.75, N: 0.7, Cl: 0.85, Na: 0.9 };
+        const PALETTE_ATOMS = ['H', 'O', 'C', 'N', 'Cl', 'Na'];
+
+        const RECIPES = {
+            'H2O': { label: 'H₂O', atoms: ['H', 'H', 'O'], bonds: [[0, 2], [1, 2]], name: 'Water', emoji: '💧', desc: 'Two hydrogen atoms bonded to one oxygen. The bent shape gives water its amazing properties — surface tension, dissolving power, and life itself!' },
+            'O2': { label: 'O₂', atoms: ['O', 'O'], bonds: [[0, 1]], name: 'Oxygen Gas', emoji: '💨', desc: 'Two oxygen atoms sharing a double bond. The air you breathe is 21% O₂. The double bond makes it reactive — perfect for powering your cells!' },
+            'CO2': { label: 'CO₂', atoms: ['C', 'O', 'O'], bonds: [[0, 1], [0, 2]], name: 'Carbon Dioxide', emoji: '🌫️', desc: 'One carbon with two oxygens in double bonds on each side. This linear molecule is exhaled by animals and absorbed by plants for photosynthesis.' },
+            'CH4': { label: 'CH₄', atoms: ['C', 'H', 'H', 'H', 'H'], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], name: 'Methane', emoji: '🔥', desc: 'One carbon atom bonded to four hydrogens in a perfect tetrahedron shape. Natural gas is mostly methane — it powers stoves and heaters!' },
+            'NaCl': { label: 'NaCl', atoms: ['Na', 'Cl'], bonds: [[0, 1]], name: 'Table Salt', emoji: '🧂', desc: 'Sodium gives its outer electron to Chlorine — an ionic bond! Unlike covalent bonds, no sharing here. This is why salt conducts electricity when dissolved in water.' },
+        };
+
+        // Build palette
+        const paletteEl = document.getElementById('mol-palette');
+        let selectedAtomType = 'H';
+        PALETTE_ATOMS.forEach(sym => {
+            const div = document.createElement('div');
+            div.className = 'palette-atom' + (sym === 'H' ? ' selected' : '');
+            div.style.background = `#${ATOM_COLORS[sym].toString(16).padStart(6, '0')}33`;
+            div.style.borderColor = `#${ATOM_COLORS[sym].toString(16).padStart(6, '0')}`;
+            div.style.color = `#${ATOM_COLORS[sym].toString(16).padStart(6, '0')}`;
+            div.textContent = sym;
+            div.addEventListener('click', () => {
+                selectedAtomType = sym;
+                document.querySelectorAll('.palette-atom').forEach(x => x.classList.remove('selected'));
+                div.classList.add('selected');
+                setMolStatus(`Selected ${sym} — tap canvas to place`);
+            });
+            paletteEl.appendChild(div);
+        });
+
+        // Recipe chips
+        const recipeEl = document.getElementById('mol-recipe');
+        Object.keys(RECIPES).forEach(key => {
+            const chip = document.createElement('div');
+            chip.className = 'recipe-chip';
+            chip.textContent = `${RECIPES[key].emoji} ${RECIPES[key].label}`;
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.recipe-chip').forEach(x => x.classList.remove('active-recipe'));
+                chip.classList.add('active-recipe');
+                loadRecipe(key);
+            });
+            recipeEl.appendChild(chip);
+        });
+
+        // Molecule state
+        let molAtoms = []; // {sym, mesh, x, y, z}
+        let molBondMeshes = [];
+
+        function setMolStatus(msg) { document.getElementById('mol-status').textContent = msg; }
+
+        function makeBondCylinder(a, b, count = 1, color = 0x88aacc) {
+            const dir = new THREE.Vector3().subVectors(b, a);
+            const len = dir.length();
+            const mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5);
+            const group = new THREE.Group();
+            for (let i = 0; i < count; i++) {
+                const offset = (i - (count - 1) / 2) * 0.18;
+                const cyl = new THREE.CylinderGeometry(0.07, 0.07, len, 8);
+                const mat = new THREE.MeshLambertMaterial({ color });
+                const m = new THREE.Mesh(cyl, mat);
+                m.position.set(offset, 0, 0);
+                group.add(m);
+            }
+            group.position.copy(mid);
+            group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+            return group;
+        }
+
+        function placeAtom(x3d, y3d, sym) {
+            const geo = new THREE.SphereGeometry(ATOM_SIZES[sym] || 0.6, 12, 10);
+            const mat = new THREE.MeshLambertMaterial({
+                color: ATOM_COLORS[sym] || 0xffffff,
+                emissive: new THREE.Color(ATOM_COLORS[sym] || 0xffffff).multiplyScalar(0.15)
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.set(x3d, y3d, 0);
+            molScene.add(mesh);
+            molAtoms.push({ sym, mesh, x: x3d, y: y3d, z: 0 });
+            setMolStatus(`Placed ${sym} — ${molAtoms.length} atom${molAtoms.length !== 1 ? 's' : ''} placed`);
+        }
+
+        function clearMolecule() {
+            molAtoms.forEach(a => molScene.remove(a.mesh));
+            molBondMeshes.forEach(b => molScene.remove(b));
+            molAtoms = []; molBondMeshes = [];
+            document.querySelectorAll('.recipe-chip').forEach(x => x.classList.remove('active-recipe'));
+            setMolStatus('Canvas cleared — select an atom and tap to place');
+        }
+
+        function autoConnect() {
+            molBondMeshes.forEach(b => molScene.remove(b)); molBondMeshes = [];
+            for (let i = 0; i < molAtoms.length; i++) {
+                for (let j = i + 1; j < molAtoms.length; j++) {
+                    const a = molAtoms[i], b = molAtoms[j];
+                    const dist = Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+                    const maxDist = (ATOM_SIZES[a.sym] || 0.6) + (ATOM_SIZES[b.sym] || 0.6) + 2.2;
+                    if (dist < maxDist) {
+                        const pa = new THREE.Vector3(a.x, a.y, a.z);
+                        const pb = new THREE.Vector3(b.x, b.y, b.z);
+                        const isDouble = (a.sym === 'O' && b.sym === 'O') || (a.sym === 'C' && ['O', 'N'].includes(b.sym));
+                        const cnt = isDouble ? 2 : 1;
+                        const bm = makeBondCylinder(pa, pb, cnt, 0x6699cc);
+                        molScene.add(bm); molBondMeshes.push(bm);
+                    }
+                }
+            }
+            setMolStatus('Bonds connected! Tap ✓ Check to verify your molecule.');
+        }
+
+        function checkMolecule() {
+            const counts = {};
+            molAtoms.forEach(a => { counts[a.sym] = (counts[a.sym] || 0) + 1; });
+            let matched = null;
+            Object.keys(RECIPES).forEach(key => {
+                const r = RECIPES[key];
+                const rc = {};
+                r.atoms.forEach(s => { rc[s] = (rc[s] || 0) + 1; });
+                const userKeys = Object.keys(counts).sort();
+                const recipeKeys = Object.keys(rc).sort();
+                if (userKeys.length === recipeKeys.length &&
+                    userKeys.every((k, i) => k === recipeKeys[i] && counts[k] === rc[k])) {
+                    matched = key;
+                }
+            });
+            if (matched) {
+                const r = RECIPES[matched];
+                molAtoms.forEach(a => { a.mesh.material.emissiveIntensity = 0.6; });
+                setTimeout(() => molAtoms.forEach(a => { a.mesh.material.emissiveIntensity = 0.15; }), 900);
+                setMolStatus(`✅ You built ${r.emoji} ${r.name} (${r.label})!`);
+                showCard(r.emoji, 'MOLECULE IDENTIFIED', r.name, r.desc);
+            } else {
+                setMolStatus(`🤔 Not a known molecule yet — keep adding atoms or try a recipe!`);
+            }
+        }
+
+        function loadRecipe(key) {
+            clearMolecule();
+            const r = RECIPES[key];
+            const n = r.atoms.length;
+            // Arrange atoms in a circle
+            r.atoms.forEach((sym, i) => {
+                const angle = (i / n) * Math.PI * 2;
+                const radius = n === 1 ? 0 : n <= 2 ? 1.8 : 2.5;
+                placeAtom(Math.cos(angle) * radius, Math.sin(angle) * radius, sym);
+            });
+            // Add specific bonds
+            r.bonds.forEach(([ai, bi]) => {
+                const a = molAtoms[ai], b = molAtoms[bi];
+                const pa = new THREE.Vector3(a.x, a.y, a.z);
+                const pb = new THREE.Vector3(b.x, b.y, b.z);
+                const isDouble = (a.sym === 'O' && b.sym === 'O') || (a.sym === 'C' && ['O', 'N'].includes(b.sym));
+                const bm = makeBondCylinder(pa, pb, isDouble ? 2 : 1, 0x6699cc);
+                molScene.add(bm); molBondMeshes.push(bm);
+            });
+            setMolStatus(`Loaded ${r.emoji} ${r.name} — tap ✓ Check to verify!`);
+            showCard(r.emoji, 'RECIPE LOADED', r.name, r.desc);
+        }
+
+        // Canvas tap to place atom
+        let molDragStart2 = { x: 0, y: 0 };
+        molCanvas.addEventListener('pointerdown', e => { molDragStart2 = { x: e.clientX, y: e.clientY }; });
+        molCanvas.addEventListener('pointerup', e => {
+            if (Math.hypot(e.clientX - molDragStart2.x, e.clientY - molDragStart2.y) > 6) return;
+            const rect = molCanvas.getBoundingClientRect();
+            const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            const ny = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            // Unproject to z=0 plane
+            const vec = new THREE.Vector3(nx, ny, 0.5);
+            vec.unproject(molCamera);
+            const dir = vec.sub(molCamera.position).normalize();
+            const dist = -molCamera.position.z / dir.z;
+            const pos = molCamera.position.clone().addScaledVector(dir, dist);
+            // Clamp to canvas area
+            const halfW = 7, halfH = 5.5;
+            if (Math.abs(pos.x) < halfW && Math.abs(pos.y) < halfH) {
+                placeAtom(pos.x, pos.y, selectedAtomType);
+            }
+        });
+
+        // Mol animate
+        let molTick = 0;
+        function animateMol() {
+            requestAnimationFrame(animateMol);
+            molTick++;
+            molScene.rotation.y = Math.sin(molTick * 0.005) * 0.15;
+            molRenderer.render(molScene, molCamera);
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  ═══ PANEL 3: BOND TYPES ═══
+        // ═══════════════════════════════════════════════════
+        function resizeBondCanvas() {
+            const p = document.getElementById('p-bond');
+            bondCanvas.width = p.clientWidth;
+            bondCanvas.height = p.clientHeight;
+            bondRenderer.setSize(bondCanvas.clientWidth, bondCanvas.clientHeight);
+            bondCamera.aspect = bondCanvas.clientWidth / bondCanvas.clientHeight;
+            bondCamera.updateProjectionMatrix();
+        }
+
+        const bondCanvas = document.getElementById('bondCanvas');
+        const bondRenderer = new THREE.WebGLRenderer({ canvas: bondCanvas, antialias: true });
+        bondRenderer.setClearColor(0x0a0e1a);
+        bondRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        const bondScene = new THREE.Scene();
+        const bondCamera = new THREE.PerspectiveCamera(50, 1, .1, 100);
+        bondCamera.position.set(0, 0, 12);
+        bondScene.add(new THREE.AmbientLight(0x334466, 1.3));
+        bondScene.add(new THREE.DirectionalLight(0xffffff, 1.0));
+
+        const BOND_INFO = [
+            { title: 'Single Bond (σ)', text: 'Two atoms share 1 pair of electrons. This is the simplest bond — like H–H in hydrogen gas or C–H in methane. Atoms can rotate freely around a single bond.', color: 0x6699cc, count: 1, atoms: ['H', 'H'] },
+            { title: 'Double Bond (σ + π)', text: 'Two atoms share 2 pairs of electrons — one sigma and one pi bond. Double bonds are shorter and stronger than single bonds, and atoms CANNOT rotate around them. Example: O=O in oxygen gas, C=O in CO₂.', color: 0xf97316, count: 2, atoms: ['O', 'O'] },
+            { title: 'Triple Bond (σ + 2π)', text: 'Three shared electron pairs! This is the strongest and shortest covalent bond. Triple bonds are very hard to break. Example: N≡N in nitrogen gas (N₂) — so stable that plants can\'t use it directly!', color: 0xa78bfa, count: 3, atoms: ['N', 'N'] },
+            { title: 'Ionic Bond', text: 'One atom GIVES its electron to another — no sharing! The atom that loses an electron becomes a positive ion (+). The one that gains becomes a negative ion (−). Opposites attract! Example: Na⁺Cl⁻ (table salt).', color: 0xfbbf24, count: 1, atoms: ['Na', 'Cl'], ionic: true },
+        ];
+
+        let bondMeshes = [], currentBondType = 0;
+
+        function buildBondScene(idx) {
+            bondMeshes.forEach(m => bondScene.remove(m)); bondMeshes = [];
+            const bd = BOND_INFO[idx];
+            const aLeft = new THREE.Mesh(new THREE.SphereGeometry(0.9, 14, 12),
+                new THREE.MeshLambertMaterial({ color: ATOM_COLORS[bd.atoms[0]] || 0xfafafa, emissive: new THREE.Color(ATOM_COLORS[bd.atoms[0]] || 0xfafafa).multiplyScalar(0.2) }));
+            aLeft.position.set(-2.5, 0, 0);
+            bondScene.add(aLeft); bondMeshes.push(aLeft);
+
+            const aRight = new THREE.Mesh(new THREE.SphereGeometry(0.9, 14, 12),
+                new THREE.MeshLambertMaterial({ color: ATOM_COLORS[bd.atoms[1]] || 0xfafafa, emissive: new THREE.Color(ATOM_COLORS[bd.atoms[1]] || 0xfafafa).multiplyScalar(0.2) }));
+            aRight.position.set(2.5, 0, 0);
+            bondScene.add(aRight); bondMeshes.push(aRight);
+
+            // Atom labels
+            [[-2.5, 'L'], [2.5, 'R']].forEach(([x, side], i) => {
+                // Glow sphere
+                const glow = new THREE.Mesh(new THREE.SphereGeometry(1.05, 14, 12),
+                    new THREE.MeshBasicMaterial({ color: ATOM_COLORS[bd.atoms[i]] || 0xfafafa, transparent: true, opacity: 0.08, side: THREE.BackSide }));
+                glow.position.set(x, 0, 0);
+                bondScene.add(glow); bondMeshes.push(glow);
+            });
+
+            // Bond cylinders
+            const gap = 0.26;
+            for (let i = 0; i < bd.count; i++) {
+                const offset = (i - (bd.count - 1) / 2) * gap;
+                const cyl = new THREE.CylinderGeometry(0.1, 0.1, 3.2, 10);
+                const mat = new THREE.MeshLambertMaterial({ color: bd.color, emissive: new THREE.Color(bd.color).multiplyScalar(0.3) });
+                const m = new THREE.Mesh(cyl, mat);
+                m.rotation.z = Math.PI / 2;
+                m.position.set(0, offset, 0);
+                bondScene.add(m); bondMeshes.push(m);
+            }
+
+            // For ionic bond: show +/- charge indicators
+            if (bd.ionic) {
+                const pGeo = new THREE.SphereGeometry(0.25, 8, 6);
+                const plus = new THREE.Mesh(pGeo, new THREE.MeshBasicMaterial({ color: 0xff4444 }));
+                plus.position.set(-2.5, 1.4, 0);
+                bondScene.add(plus); bondMeshes.push(plus);
+                const minus = new THREE.Mesh(pGeo, new THREE.MeshBasicMaterial({ color: 0x7dd3fc }));
+                minus.position.set(2.5, 1.4, 0);
+                bondScene.add(minus); bondMeshes.push(minus);
+            }
+
+            document.getElementById('bondTitle').textContent = bd.title;
+            document.getElementById('bondText').textContent = bd.text;
+        }
+
+        function setBondType(idx) {
+            currentBondType = idx;
+            document.querySelectorAll('.bond-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+            buildBondScene(idx);
+        }
+
+        let bondTick = 0;
+        function animateBond() {
+            requestAnimationFrame(animateBond);
+            bondTick++;
+            bondScene.rotation.y = bondTick * 0.012;
+            bondMeshes.forEach((m, i) => {
+                if (m.geometry && m.geometry.type === 'SphereGeometry' && m.geometry.parameters.radius < 1) {
+                    m.position.y = Math.sin(bondTick * 0.06 + i) * 0.06;
+                }
+            });
+            bondRenderer.render(bondScene, bondCamera);
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  ═══ PANEL 4: BREAK MODE ═══
+        // ═══════════════════════════════════════════════════
+        function resizeBreakCanvas() {
+            const p = document.getElementById('p-break');
+            breakCanvas.width = p.clientWidth;
+            breakCanvas.height = p.clientHeight;
+            breakRenderer.setSize(breakCanvas.clientWidth, breakCanvas.clientHeight);
+            breakCamera.aspect = breakCanvas.clientWidth / breakCanvas.clientHeight;
+            breakCamera.updateProjectionMatrix();
+        }
+
+        const breakCanvas = document.getElementById('breakCanvas');
+        const breakRenderer = new THREE.WebGLRenderer({ canvas: breakCanvas, antialias: true });
+        breakRenderer.setClearColor(0x0a0e1a);
+        breakRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        const breakScene = new THREE.Scene();
+        const breakCamera = new THREE.PerspectiveCamera(50, 1, .1, 100);
+        breakCamera.position.set(0, 0, 14);
+        breakScene.add(new THREE.AmbientLight(0x334466, 1.5));
+        breakScene.add(new THREE.DirectionalLight(0xffffff, 1.0));
+
+        let breakAtoms = [], breakBondMeshes = [], breakState = 'intact'; // 'intact','breaking','broken'
+        let breakTick2 = 0;
+        let breakVels = [];
+
+        function setBreakMol(key) {
+            buildBreakMol(key);
+            document.getElementById('break-status').textContent = '👆 Tap the molecule to break it apart!';
+            document.getElementById('break-info').textContent = 'When bonds break, energy is either released or absorbed. This is the foundation of all chemical reactions!';
+        }
+
+        function buildBreakMol(key) {
+            breakAtoms.forEach(a => breakScene.remove(a.mesh));
+            breakBondMeshes.forEach(b => breakScene.remove(b));
+            breakAtoms = []; breakBondMeshes = []; breakVels = []; breakState = 'intact';
+            const r = RECIPES[key];
+            const n = r.atoms.length;
+            r.atoms.forEach((sym, i) => {
+                const angle = (i / n) * Math.PI * 2;
+                const rad = n <= 2 ? 1.5 : 2.2;
+                const x = n === 1 ? 0 : Math.cos(angle) * rad;
+                const y = n === 1 ? 0 : Math.sin(angle) * rad;
+                const geo = new THREE.SphereGeometry(ATOM_SIZES[sym] || 0.6, 12, 10);
+                const mat = new THREE.MeshLambertMaterial({
+                    color: ATOM_COLORS[sym] || 0xffffff,
+                    emissive: new THREE.Color(ATOM_COLORS[sym] || 0xffffff).multiplyScalar(0.15)
+                });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(x, y, 0);
+                breakScene.add(mesh);
+                breakAtoms.push({ sym, mesh, x, y, z: 0 });
+                breakVels.push(new THREE.Vector3(rnd(-0.02, 0.02), rnd(-0.02, 0.02), 0));
+            });
+            r.bonds.forEach(([ai, bi]) => {
+                const a = breakAtoms[ai], b = breakAtoms[bi];
+                const pa = new THREE.Vector3(a.x, a.y, 0);
+                const pb = new THREE.Vector3(b.x, b.y, 0);
+                const isDouble = (a.sym === 'O' && b.sym === 'O') || (a.sym === 'C' && ['O', 'N'].includes(b.sym));
+                const bm = makeBondCylinderScene(breakScene, pa, pb, isDouble ? 2 : 1, 0x6699cc);
+                breakBondMeshes.push(bm);
+            });
+        }
+
+        function makeBondCylinderScene(scene, a, b, count, color) {
+            const dir = new THREE.Vector3().subVectors(b, a);
+            const len = dir.length();
+            const mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5);
+            const group = new THREE.Group();
+            for (let i = 0; i < count; i++) {
+                const off = (i - (count - 1) / 2) * 0.18;
+                const cyl = new THREE.CylinderGeometry(0.07, 0.07, len, 8);
+                const m = new THREE.Mesh(cyl, new THREE.MeshLambertMaterial({ color }));
+                m.position.set(off, 0, 0);
+                group.add(m);
+            }
+            group.position.copy(mid);
+            group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+            scene.add(group);
+            return group;
+        }
+
+        function breakMolecule() {
+            if (breakState !== 'intact') return;
+            breakState = 'breaking';
+            // Assign outward velocities
+            breakAtoms.forEach((a, i) => {
+                const dir = new THREE.Vector3(a.x, a.y, 0).normalize();
+                if (dir.length() < 0.01) dir.set(rnd(-1, 1), rnd(-1, 1), 0).normalize();
+                breakVels[i] = dir.multiplyScalar(rnd(0.06, 0.12));
+                breakVels[i].z = rnd(-0.04, 0.04);
+                // Rapid color flash
+                a.mesh.material.emissive.set(0xff6600);
+                setTimeout(() => { a.mesh.material.emissive.set(new THREE.Color(ATOM_COLORS[a.sym] || 0).multiplyScalar(0.15)); }, 400);
+            });
+            // Remove bonds visually
+            setTimeout(() => {
+                breakBondMeshes.forEach(b => breakScene.remove(b));
+                breakBondMeshes = [];
+            }, 200);
+            breakState = 'broken';
+            document.getElementById('break-status').textContent = '💥 Bonds broken! Atoms fly apart — energy released!';
+            document.getElementById('break-info').textContent = 'Breaking bonds requires or releases energy. In an explosion, bonds break very fast and release huge amounts of energy. In your body, food molecules break apart slowly to power your cells!';
+            showCard('💥', 'BOND BREAKING', 'Energy & Chemical Reactions',
+                'When chemical bonds break, energy is released or absorbed. Exothermic reactions (like burning) release energy as heat and light. Endothermic reactions (like cooking) absorb energy. This is the foundation of all chemistry! 🔥');
+        }
+
+        // Click to break
+        let breakDragStart = { x: 0, y: 0 };
+        breakCanvas.addEventListener('pointerdown', e => { breakDragStart = { x: e.clientX, y: e.clientY }; });
+        breakCanvas.addEventListener('pointerup', e => {
+            if (Math.hypot(e.clientX - breakDragStart.x, e.clientY - breakDragStart.y) > 6) return;
+            if (breakState === 'intact') {
+                const ray2 = new THREE.Raycaster();
+                const m2 = new THREE.Vector2();
+                m2.x = (e.clientX / breakCanvas.clientWidth) * 2 - 1;
+                m2.y = -(e.clientY / breakCanvas.clientHeight) * 2 + 1;
+                ray2.setFromCamera(m2, breakCamera);
+                const hits = ray2.intersectObjects(breakAtoms.map(a => a.mesh));
+                if (hits.length > 0) breakMolecule();
+            } else {
+                setBreakMol(Object.keys(RECIPES)[0]);
+            }
+        });
+
+        // Pre-load H₂O
+        setBreakMol('H2O');
+
+        let breakTick = 0;
+        function animateBreak() {
+            requestAnimationFrame(animateBreak);
+            breakTick++;
+            breakScene.rotation.y = Math.sin(breakTick * 0.006) * 0.2;
+            if (breakState === 'broken') {
+                breakAtoms.forEach((a, i) => {
+                    a.mesh.position.addScaledVector(breakVels[i], 1);
+                    breakVels[i].y -= 0.002; // gravity
+                    a.x = a.mesh.position.x;
+                    a.y = a.mesh.position.y;
+                });
+            }
+            breakRenderer.render(breakScene, breakCamera);
+        }
+
+        window.addEventListener('resize', () => {
+            resizeAtomCanvas?.();
+            resizeMolCanvas?.();
+            resizeBondCanvas?.();
+            resizeBreakCanvas?.();
+        });
+
+        // ═══════════════════════════════════════════════════
+        //  RESIZE ALL CANVASES
+        // ═══════════════════════════════════════════════════
+        function resizeAll() {
+            const panels = ['p-atom', 'p-mol', 'p-bond', 'p-break'];
+            const renderers = [atomRenderer, molRenderer, bondRenderer, breakRenderer];
+            const cameras = [atomCamera, molCamera, bondCamera, breakCamera];
+            const canvases = [atomCanvas, molCanvas, bondCanvas, breakCanvas];
+            panels.forEach((pid, i) => {
+                const p = document.getElementById(pid);
+                const w = p.clientWidth, h = p.clientHeight;
+                if (w > 0 && h > 0) {
+                    canvases[i].width = w; canvases[i].height = h;
+                    renderers[i].setSize(w, h);
+                    cameras[i].aspect = w / h;
+                    cameras[i].updateProjectionMatrix();
+                }
+            });
+        }
+        window.addEventListener('resize', resizeAll);
+        resizeAll();
+
+        // ═══════════════════════════════════════════════════
+        //  INIT
+        // ═══════════════════════════════════════════════════
+        buildAtom();
+        buildBondScene(0);
+        animateAtom();
+        animateMol();
+        animateBond();
+        animateBreak();
+
+        setTimeout(() => {
+            resizeAll();
+            document.getElementById('loader').classList.add('fade');
+            setTimeout(() => document.getElementById('loader').remove(), 700);
+        }, 800);
+    </script>
+</body>
+
+</html>

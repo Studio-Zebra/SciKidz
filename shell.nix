@@ -6,9 +6,7 @@
 with pkgs;
   mkShell {
     packages = [
-      git
-
-      nil
+      nixd
       alejandra
 
       ssh-to-age
