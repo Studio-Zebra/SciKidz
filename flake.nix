@@ -6,10 +6,6 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
 
-    agenix = {
-      url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     agenix-shell = {
       url = "github:aciceri/agenix-shell";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -27,7 +23,6 @@
   outputs = inputs @ {
     nixpkgs,
     flake-parts,
-    agenix,
     ...
   }: let
     inherit (nixpkgs) lib;
@@ -48,11 +43,6 @@
       }: {
         _module.args.pkgs = import nixpkgs {
           inherit system;
-          overlays = [
-            (_: _: {
-              agenix = agenix.packages.${system}.default;
-            })
-          ];
           config.allowUnfree = true;
         };
 

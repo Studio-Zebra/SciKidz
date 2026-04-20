@@ -11,7 +11,7 @@ with pkgs;
 
       ssh-to-age
       age
-      agenix
+      agenix-cli
       sops
     ];
 
