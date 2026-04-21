@@ -76,7 +76,7 @@
                 text = ''
                   nix run .#teardown
 
-                  sleep 5 # Wait for all services to disapear
+                  sleep 10 # Wait for all services to disapear
 
                   # Create required networks
                   if ! docker network ls | grep -q proxy; then
@@ -113,7 +113,7 @@
                     docker stack rm "$stack"
                   done
 
-                  sleep 5
+                  sleep 10
 
                   if docker network ls | grep -q proxy; then
                     echo "Removing network: proxy"

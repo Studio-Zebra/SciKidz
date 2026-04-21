@@ -1,12 +1,4 @@
 # stacks.yaml
-cloudflared:
-  repo: scikidz
-  branch: main
-  compose_file: docker/cloudflared/docker-compose.yml
-mongodb:
-  repo: scikidz
-  branch: main
-  compose_file: docker/mongodb/docker-compose.yml
 scikidz:
   repo: scikidz
   branch: main
