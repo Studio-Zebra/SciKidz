@@ -12,8 +12,7 @@ services:
       - scikidz
       - mongo
     secrets:
-      - source: mongo-database-password
-        target: mongo-database-password
+      - mongo-database-password
 networks:
   scikidz:
     driver: overlay
@@ -24,4 +23,3 @@ networks:
 secrets:
   mongo-database-password:
     external: true
-    name: mongodb_mongo-database-password
