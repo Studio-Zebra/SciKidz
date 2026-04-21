@@ -9,7 +9,6 @@ services:
       - mongo-root-password
       - mongo-database-password
     volumes:
-      - ./configs/mongo-init.js:/docker-entrypoint-initdb.d/init-mongo.js
       - mongodb-data:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
