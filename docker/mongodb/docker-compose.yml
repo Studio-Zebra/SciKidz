@@ -1,10 +1,10 @@
 services:
   mongo:
-    image: mongo:noble
+    image: mongo:7.0
     configs:
       - source: mongo_init
         target: /docker-entrypoint-initdb.d/init-mongo.js
-        mode: 755
+        mode: 0444
     secrets:
       - mongo-root-password
       - mongo-database-password

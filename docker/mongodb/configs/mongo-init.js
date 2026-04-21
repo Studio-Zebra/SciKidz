@@ -2,8 +2,7 @@
 // It creates a new database and user if they don't already exist.
 
 // Switch to the target database (specified by MONGO_INITDB_DATABASE in docker-compose)
-const fs = require("fs");
-const dbName = process.env.MONGO_INITDB_DATABASE;
+const dbName = _getEnv("MONGO_INITDB_DATABASE");
 const targetDb = db.getSiblingDB(dbName);
 
 print("### Initializing database: " + dbName + " ###");
@@ -17,25 +16,28 @@ targetDb.init_metadata.insertOne({
 print("### Database initialized and metadata record created. ###");
 
 // Create a new user for this database
-const userName = process.env.MONGO_INITDB_DATABASE_USERNAME;
-const userPasswordFile = process.env.MONGO_INITDB_DATABASE_PASSWORD_FILE;
-const userPassword = fs.readFileSync(userPasswordFile, "utf8").trim();
+const userName = _getEnv("MONGO_INITDB_DATABASE_USERNAME");
+const userPassword = _getEnv("MONGO_INITDB_DATABASE_PASSWORD");
 
-const userExists = targetDb.getUser(userName);
+if (userPassword) {
+  const userExists = targetDb.getUser(userName);
 
-if (!userExists) {
-  print("### Creating user: " + userName + " ###");
-  targetDb.createUser({
-    user: userName,
-    pwd: userPassword,
-    roles: [
-      { role: "readWrite", db: dbName },
-      { role: "dbAdmin", db: dbName },
-    ],
-  });
-  print("### User " + userName + " created successfully. ###");
+  if (!userExists) {
+    print("### Creating user: " + userName + " ###");
+    targetDb.createUser({
+      user: userName,
+      pwd: userPassword,
+      roles: [
+        { role: "readWrite", db: dbName },
+        { role: "dbAdmin", db: dbName },
+      ],
+    });
+    print("### User " + userName + " created successfully. ###");
+  } else {
+    print("### User " + userName + " already exists. ###");
+  }
 } else {
-  print("### User " + userName + " already exists. ###");
+  print("### WARNING: MONGO_INITDB_DATABASE_PASSWORD not set, skipping user creation. ###");
 }
 
 print("### Seed script execution complete. ###");

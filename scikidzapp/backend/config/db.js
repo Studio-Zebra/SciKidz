@@ -7,6 +7,7 @@ export const connectDB = async () => {
       connectTimeoutMS: 30000,
     })
 
+    console.log(`MONGO_URI: ${process.env.MONGO_URI}`)
     console.log(`MongoDB Connected: ${conn.connection.host}`)
   } catch (error) {
     console.error("MongoDB connection failed:", error)
