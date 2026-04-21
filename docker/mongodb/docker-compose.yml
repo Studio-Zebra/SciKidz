@@ -1,6 +1,12 @@
 services:
   mongo:
     image: mongo:8.0
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        export MONGO_INITDB_DATABASE_PASSWORD=$$(cat /run/secrets/mongo-database-password)
+        exec docker-entrypoint.sh mongod --auth --bind_ip_all
     configs:
       - source: mongo_init
         target: /docker-entrypoint-initdb.d/init-mongo.js
