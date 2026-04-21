@@ -4,11 +4,12 @@ services:
     configs:
       - source: mongo_init
         target: /docker-entrypoint-initdb.d/init-mongo.js
-        mode: 0444
+        mode: 444
     secrets:
       - mongo-root-password
       - mongo-database-password
     volumes:
+      - ./configs/mongo-init.js:/docker-entrypoint-initdb.d/init-mongo.js
       - mongodb-data:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
