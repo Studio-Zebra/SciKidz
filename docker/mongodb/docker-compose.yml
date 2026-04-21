@@ -16,7 +16,6 @@ services:
       MONGO_INITDB_DATABASE: scikidz
       MONGO_INITDB_DATABASE_USERNAME: scikidz_service
       MONGO_INITDB_DATABASE_PASSWORD_FILE: /run/secrets/mongo-database-password
-      # This env var will be set by the entrypoint or swarm-cd if available
     networks:
       - mongo
     deploy:
