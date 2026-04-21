@@ -18,9 +18,14 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    github-actions-nix = {
+      url = "github:synapdeck/github-actions-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
+    self,
     nixpkgs,
     flake-parts,
     ...
@@ -32,6 +37,7 @@
         agenix-shell.flakeModules.default
         treefmt-nix.flakeModule
         git-hooks-nix.flakeModule
+        github-actions-nix.flakeModule
       ];
       systems = import inputs.systems;
       agenix-shell.secrets = (import ./secrets.nix {inherit lib;}).agenix-shell-secrets;
@@ -49,17 +55,14 @@
         devShells.default = import ./shell.nix {
           inherit lib pkgs;
           config = {
-            inherit (config) pre-commit agenix-shell;
+            inherit (config) pre-commit agenix-shell githubActions;
           };
         };
 
-        treefmt = import ./treefmt.nix {
-          inherit lib pkgs;
-        };
-
-        pre-commit = import ./pre-commit.nix {
-          inherit lib pkgs;
-        };
+        # --- Configuration Builders --- #
+        githubActions = import ./actions.nix {inherit self lib;};
+        treefmt = import ./treefmt.nix {inherit lib pkgs;};
+        pre-commit = import ./pre-commit.nix {inherit lib pkgs;};
 
         apps = rec {
           deploy = {

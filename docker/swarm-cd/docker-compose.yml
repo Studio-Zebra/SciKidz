@@ -11,12 +11,12 @@ services:
       - source: swarm-cd_stacks
         target: /app/stacks.yaml
         mode: 400
-    environment:
-      SOPS_AGE_KEY_FILE: /run/secrets/cluster-key
     secrets:
       - cluster-key
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      SOPS_AGE_KEY_FILE: /run/secrets/cluster-key
     deploy:
       restart_policy:
         condition: on-failure

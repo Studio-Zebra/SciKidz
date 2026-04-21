@@ -9,7 +9,7 @@ import { connectDB } from "./config/db.js";
 
 console.log("1) server.js loaded");
 
-dotenv.config();
+// dotenv.config();
 console.log("2) dotenv loaded. MONGO_URI present?", !!process.env.MONGO_URI);
 
 const app = express();

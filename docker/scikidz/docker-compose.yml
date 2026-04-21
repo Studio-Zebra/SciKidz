@@ -1,0 +1,19 @@
+services:
+  backend:
+    build:
+      context: ../../scikidzapp/backend
+      dockerfile: dockerfile
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/scikidz
+      - PORT=5757
+    networks:
+      - scikidz
+      - mongo
+networks:
+  scikidz:
+    driver: overlay
+    attachable: true
+  mongo:
+    external: true
+volumes:
+  mongodb_data:

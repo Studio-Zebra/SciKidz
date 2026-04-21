@@ -1,13 +1,13 @@
 services:
   mongo:
     image: mongo:noble
-    secrets:
-      - mongo-root-password
-      - mongo-database-password
     configs:
       - source: mongo_init
         target: /docker-entrypoint-initdb.d/init-mongo.js
-        mode: 0755
+        mode: 755
+    secrets:
+      - mongo-root-password
+      - mongo-database-password
     volumes:
       - mongodb-data:/data/db
     environment:
@@ -29,13 +29,13 @@ services:
   mongo-express:
     image: mongo-express
     entrypoint: ["/bin/sh", "/configs/mongo-express-entrypoint.sh"]
-    secrets:
-      - mongo-root-password
-      - mongo-express-password
     configs:
       - source: mongo-express-entrypoint
         target: /configs/mongo-express-entrypoint.sh
-        mode: 0755
+        mode: 755
+    secrets:
+      - mongo-root-password
+      - mongo-express-password
     environment:
       ME_CONFIG_SITE_BASEURL: /db
       MONGO_HOST: mongo
@@ -57,6 +57,11 @@ services:
       placement:
         constraints:
           - node.role == manager
+configs:
+  mongo_init:
+    file: ./configs/mongo-init.js
+  mongo-express-entrypoint:
+    file: ./configs/mongo-express-entrypoint.sh
 secrets:
   mongo-root-password:
     file: ./secrets/mongo-root-password
@@ -64,11 +69,6 @@ secrets:
     file: ./secrets/mongo-database-password
   mongo-express-password:
     file: ./secrets/mongo-express-password
-configs:
-  mongo_init:
-    file: ./configs/mongo-init.js
-  mongo-express-entrypoint:
-    file: ./configs/mongo-express-entrypoint.sh
 volumes:
   mongodb-data:
 networks:
