@@ -65,10 +65,13 @@ configs:
 secrets:
   mongo-root-password:
     file: ./secrets/mongo-root-password
+    name: mongo-root-password
   mongo-database-password:
     file: ./secrets/mongo-database-password
+    name: mongo-database-password
   mongo-express-password:
     file: ./secrets/mongo-express-password
+    name: mongo-express-password
 volumes:
   mongodb-data:
 networks:
