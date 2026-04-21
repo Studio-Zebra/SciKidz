@@ -3,7 +3,7 @@ services:
     image: mongo:7.0
     configs:
       - source: mongo_init
-        target: /docker-entrypoint-initdb.d/init-mongo.js
+        target: /docker-entrypoint-initdb.d/init.js
         mode: 444
     secrets:
       - mongo-root-password
@@ -28,10 +28,10 @@ services:
           - node.role == manager
   mongo-express:
     image: mongo-express
-    entrypoint: ["/bin/sh", "/configs/mongo-express-entrypoint.sh"]
+    entrypoint: ["/bin/sh", "/configs/entrypoint.sh"]
     configs:
       - source: mongo-express-entrypoint
-        target: /configs/mongo-express-entrypoint.sh
+        target: /configs/entrypoint.sh
         mode: 755
     secrets:
       - mongo-root-password
@@ -59,9 +59,9 @@ services:
           - node.role == manager
 configs:
   mongo_init:
-    file: ./configs/mongo-init.js
+    file: ./configs/mongo/init.js
   mongo-express-entrypoint:
-    file: ./configs/mongo-express-entrypoint.sh
+    file: ./configs/mongo-express/entrypoint.sh
 secrets:
   mongo-root-password:
     file: ./secrets/mongo-root-password

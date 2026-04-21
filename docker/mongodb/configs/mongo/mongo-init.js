@@ -2,7 +2,7 @@
 // It creates a new database and user if they don't already exist.
 
 // Switch to the target database (specified by MONGO_INITDB_DATABASE in docker-compose)
-const dbName = _getEnv("MONGO_INITDB_DATABASE");
+const dbName = process.env.MONGO_INITDB_DATABASE;
 const targetDb = db.getSiblingDB(dbName);
 
 print("### Initializing database: " + dbName + " ###");
@@ -16,16 +16,16 @@ targetDb.init_metadata.insertOne({
 print("### Database initialized and metadata record created. ###");
 
 // Create a new user for this database
-const userName = _getEnv("MONGO_INITDB_DATABASE_USERNAME");
-const passwordFile = _getEnv("MONGO_INITDB_DATABASE_PASSWORD_FILE");
+const userName = process.env.MONGO_INITDB_DATABASE_USERNAME;
+const passwordFile = process.env.MONGO_INITDB_DATABASE_PASSWORD_FILE;
 
 let userPassword = "";
 if (passwordFile) {
-    try {
-        userPassword = fs.readFileSync(passwordFile, 'utf8').trim();
-    } catch (e) {
-        print("### Error reading password file: " + e + " ###");
-    }
+  try {
+    userPassword = fs.readFileSync(passwordFile, 'utf8').trim();
+  } catch (e) {
+    print("### Error reading password file: " + e + " ###");
+  }
 }
 
 if (userPassword) {
