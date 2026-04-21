@@ -22,5 +22,4 @@ networks:
     name: mongodb_mongo
 secrets:
   mongo-database-password:
-    external: true
-    name: mongodb_mongo-database-password
+    file: ../mongodb/secrets/mongo-database-password

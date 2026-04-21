@@ -17,7 +17,16 @@ print("### Database initialized and metadata record created. ###");
 
 // Create a new user for this database
 const userName = _getEnv("MONGO_INITDB_DATABASE_USERNAME");
-const userPassword = _getEnv("MONGO_INITDB_DATABASE_PASSWORD");
+const passwordFile = _getEnv("MONGO_INITDB_DATABASE_PASSWORD_FILE");
+
+let userPassword = "";
+if (passwordFile) {
+    try {
+        userPassword = fs.readFileSync(passwordFile, 'utf8').trim();
+    } catch (e) {
+        print("### Error reading password file: " + e + " ###");
+    }
+}
 
 if (userPassword) {
   const userExists = targetDb.getUser(userName);
@@ -37,7 +46,7 @@ if (userPassword) {
     print("### User " + userName + " already exists. ###");
   }
 } else {
-  print("### WARNING: MONGO_INITDB_DATABASE_PASSWORD not set, skipping user creation. ###");
+  print("### WARNING: Database password not found, skipping user creation. ###");
 }
 
 print("### Seed script execution complete. ###");
