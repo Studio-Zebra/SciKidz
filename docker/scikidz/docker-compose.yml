@@ -1,0 +1,34 @@
+services:
+  backend:
+    image: scikidz-backend:latest
+    build:
+      context: ../../scikidzapp/backend
+      dockerfile: dockerfile
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://scikidz_service:PASSWORD@mongo:27017/scikidz?authSource=admin
+      - MONGO_PASSWORD_FILE=/run/secrets/mongo-database-password
+      - PORT=5757
+    networks:
+      - scikidz
+      - mongo
+    secrets:
+      - mongo-database-password
+networks:
+  scikidz:
+    driver: overlay
+    attachable: true
+  mongo:
+    external: true
+    name: mongodb_mongo
+secrets:
+  mongo-database-password:
+    external: true
