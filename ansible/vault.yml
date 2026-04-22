@@ -1,0 +1,7 @@
+# Replace the placeholder key below with your actual Tailscale Auth Key.
+# Then, encrypt this file using the following command:
+# ansible-vault encrypt ansible/vault.yml
+# 
+# During playbook execution, you can provide the vault password by running:
+# ansible-playbook -i ansible/inventory.yml ansible/playbook.yml --ask-vault-pass
+tailscale_auth_key: "tskey-auth-YOUR-KEY-HERE"

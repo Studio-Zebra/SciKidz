@@ -1,47 +1,23 @@
 {
-    "editor.formatOnSave": true,
-    "editor.inlineSuggest.enabled": true,
-    "editor.bracketPairColorization.enabled": true,
-    "editor.guides.bracketPairs": "active",
-    "search.exclude": {
-        "result": true,
-        "result-*": true,
-        ".direnv/": true
-    },
-    "files.exclude": {
-        "result": true,
-        "result-*": true,
-        ".direnv/": true,
-        ".git": true
-    },
-    "files.watcherExclude": {
-        "result": true,
-        "result-*": true,
-        ".direnv/": true
-    },
-    "[nix]": {
-        "editor.defaultFormatter": "jnoortheen.nix-ide",
-        "editor.formatOnSave": true
-    },
-    "nix.enableLanguageServer": true,
-    "nix.serverPath": "nil",
-    "nix.serverSettings": {
-        "nil": {
-            "formatting": {
-                "command": [
-                    "alejandra"
-                ]
-            },
-            "diagnostics": {
-                "ignored": [
-                    "unused_binding",
-                    "unused_parameter"
-                ]
-            }
+  "nix.serverSettings": {
+    "nixd": {
+      "formatting": {
+        "command": [
+          "alejandra"
+        ]
+      },
+      "nixpkgs": {
+        "expr": "import (builtins.getFlake (builtins.toString ./.)).inputs.nixpkgs { }"
+      },
+      "options": {
+        "nixos": {
+          "expr": "(builtins.getFlake (builtins.toString ./.)).nixosConfigurations.zephyrus.options"
+        },
+        "home-manager": {
+          "expr": "(builtins.getFlake (builtins.toString ./.)).homeConfigurations.sphoono@zephyrus.options"
         }
-    },
-    "direnv.restart.automatic": true,
-    "[dockercompose]": {
-        "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+      }
     }
+  },
+  "ansible.python.interpreterPath": "/nix/store/pzdalg368npikvpq4ncz2saxnz19v53k-python3-3.13.12/bin/python"
 }

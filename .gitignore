@@ -6,8 +6,6 @@
 .buildlog/
 .history
 
-
-
 # Flutter repo-specific
 /bin/cache/
 /bin/internal/bootstrap.bat
@@ -121,10 +119,10 @@ app.*.symbols
 #Node Modules
 node_modules/
 
-# Docker secrets
-docker/token.txt
-
+# Nix
 .direnv/
-
 result
 .pre-commit-config.yaml
+
+# Ansible
+.ansible
