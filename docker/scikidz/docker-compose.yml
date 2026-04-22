@@ -100,6 +100,23 @@ services:
       placement:
         constraints:
           - node.role == manager
+  # Frontend
+  frontend:
+    image: scikidz-frontend:latest
+    build:
+      context: ../../scikidzapp/scikidz-frontend
+      dockerfile: Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - proxy
+      - scikidz
 configs:
   mongo_init:
     file: ./configs/mongo/init.js
