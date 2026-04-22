@@ -120,9 +120,9 @@
                     docker network rm proxy
                   fi
 
-                  if [ "$#" -eq 1 ] && [ "$1" == "--complete" ] && docker volume ls | grep -q mongodb_mongodb-data; then
-                    echo "Removing volume: mongodb_mongodb-data"
-                    docker volume rm mongodb_mongodb-data
+                  if [ "$#" -eq 1 ] && [ "$1" == "--complete" ] && docker volume ls | grep -q scikidz_mongodb-data; then
+                    echo "Removing volume: scikidz_mongodb-data"
+                    docker volume rm scikidz_mongodb-data
                   fi
                 '';
               }
