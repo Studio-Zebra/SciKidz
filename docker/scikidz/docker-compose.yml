@@ -74,7 +74,7 @@ services:
           - node.role == manager
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://scikidz_service:PASSWORD@mongo:27017/scikidz?authSource=admin
+      - MONGO_URI=mongodb://scikidz_service:PASSWORD@mongo:27017/scikidz?authSource=scikidz
       - MONGO_PASSWORD_FILE=/run/secrets/mongo-database-password
       - PORT=5757
     networks:
