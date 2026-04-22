@@ -51,7 +51,7 @@
       const token = localStorage.getItem('token')
       if (!token) return
   
-      const response = await fetch('http://backend:5757/api/users/password', {
+      const response = await fetch('/api/users/password', {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
