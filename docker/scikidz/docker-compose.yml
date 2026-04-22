@@ -64,6 +64,18 @@ services:
     build:
       context: ../../scikidzapp/backend
       dockerfile: dockerfile
+    secrets:
+      - mongo-database-password
+      - backend-jwt-secret
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://scikidz_service:PASSWORD@mongo:27017/scikidz?authSource=scikidz
+      - MONGO_PASSWORD_FILE=/run/secrets/mongo-database-password
+      - JWT_SECRET_FILE=/run/secrets/backend-jwt-secret
+      - PORT=5757
+    networks:
+      - scikidz
+      - mongo
     deploy:
       mode: replicated
       replicas: 1
@@ -72,22 +84,15 @@ services:
       placement:
         constraints:
           - node.role == manager
-    environment:
-      - NODE_ENV=production
-      - MONGO_URI=mongodb://scikidz_service:PASSWORD@mongo:27017/scikidz?authSource=scikidz
-      - MONGO_PASSWORD_FILE=/run/secrets/mongo-database-password
-      - PORT=5757
-    networks:
-      - scikidz
-      - mongo
-    secrets:
-      - mongo-database-password
   # Frontend
   frontend:
     image: scikidz-frontend:latest
     build:
       context: ../../scikidzapp/scikidz-frontend
       dockerfile: Dockerfile
+    networks:
+      - proxy
+      - scikidz
     deploy:
       mode: replicated
       replicas: 1
@@ -96,9 +101,6 @@ services:
       placement:
         constraints:
           - node.role == manager
-    networks:
-      - proxy
-      - scikidz
   # Cloudflared
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -132,6 +134,9 @@ secrets:
   mongo-express-password:
     file: ./secrets/mongo-express-password
     name: mongo-express-password
+  backend-jwt-secret:
+    file: ./secrets/backend-jwt-secret
+    name: backend-jwt-secret
   tunnel-token:
     file: ./secrets/tunnel-token
     name: tunnel-token
@@ -145,4 +150,5 @@ networks:
     driver: overlay
     attachable: true
   proxy:
-    external: true
+    driver: overlay
+    attachable: true

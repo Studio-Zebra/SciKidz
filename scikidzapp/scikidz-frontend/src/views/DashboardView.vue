@@ -105,7 +105,7 @@ async function fetchUserProfile() {
     const token = localStorage.getItem('token')
     if (!token) return
 
-    const response = await fetch('http://localhost:5757/api/users/me', {
+    const response = await fetch('http://backend:5757/api/users/me', {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,

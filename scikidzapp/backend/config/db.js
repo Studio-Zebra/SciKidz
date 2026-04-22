@@ -11,7 +11,6 @@ export const connectDB = async () => {
       uri = uri.replace("PASSWORD", encodeURIComponent(password))
     }
 
-    console.log(uri)
     const conn = await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 30000,
       connectTimeoutMS: 30000,

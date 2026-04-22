@@ -3,14 +3,22 @@ import dns from "dns";
 dns.setDefaultResultOrder("ipv4first");
 
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
+import fs from "fs";
 import { connectDB } from "./config/db.js";
 
 console.log("1) server.js loaded");
 
-// dotenv.config();
 console.log("2) dotenv loaded. MONGO_URI present?", !!process.env.MONGO_URI);
+
+if (process.env.JWT_SECRET_FILE) {
+  try {
+    process.env.JWT_SECRET = fs.readFileSync(process.env.JWT_SECRET_FILE, 'utf8').trim();
+    console.log("Loaded JWT_SECRET from file");
+  } catch (err) {
+    console.error("Failed to read JWT_SECRET_FILE:", err);
+  }
+}
 
 const app = express();
 app.use(cors({
