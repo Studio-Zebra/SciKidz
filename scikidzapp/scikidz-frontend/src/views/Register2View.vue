@@ -40,7 +40,7 @@
 
 <button
   class="next-btn"
-  :disabled="!isValidUsername"
+  :disabled="!isFormValid"
   @click="nextStep"
 >
   Next
@@ -76,10 +76,14 @@ const isValidUsername = computed(() =>
   validUsernameLength.value && validUsernameNoSpaces.value
 )
 
+const isFormValid = computed(() =>
+  isValidUsername.value && firstName.value.trim().length > 0 && lastName.value.trim().length > 0
+)
+
 //Navigation
 
 const nextStep = () => {
-  if (!isValidUsername.value) return
+  if (!isFormValid.value) return
 
   router.push({
     name: 'Register3',
