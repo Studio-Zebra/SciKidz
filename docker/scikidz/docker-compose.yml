@@ -60,7 +60,7 @@ services:
           - node.role == manager
   # Scikidz
   backend:
-    image: scikidz-backend:latest
+    image: ghcr.io/studio-zebra/scikidz-backend:latest
     build:
       context: ../../scikidzapp/backend
       dockerfile: dockerfile
@@ -86,7 +86,7 @@ services:
           - node.role == manager
   # Frontend
   frontend:
-    image: scikidz-frontend:latest
+    image: ghcr.io/studio-zebra/scikidz-frontend:latest
     build:
       context: ../../scikidzapp/scikidz-frontend
       dockerfile: Dockerfile
