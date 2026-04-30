@@ -19,15 +19,19 @@ jobs:
           - name: frontend
             context: ./scikidzapp/scikidz-frontend
             dockerfile: ./scikidzapp/scikidz-frontend/Dockerfile
-            image: ghcr.io/${{ github.repository_owner }}/scikidz-frontend
+            image_name: scikidz-frontend
           - name: backend
             context: ./scikidzapp/backend
             dockerfile: ./scikidzapp/backend/dockerfile
-            image: ghcr.io/${{ github.repository_owner }}/scikidz-backend
+            image_name: scikidz-backend
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Normalize image owner to lowercase
+        id: vars
+        run: echo "owner_lc=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -46,5 +50,5 @@ jobs:
           file: ${{ matrix.dockerfile }}
           push: true
           tags: |
-            ${{ matrix.image }}:latest
-            ${{ matrix.image }}:${{ github.sha }}
+            ghcr.io/${{ steps.vars.outputs.owner_lc }}/${{ matrix.image_name }}:latest
+            ghcr.io/${{ steps.vars.outputs.owner_lc }}/${{ matrix.image_name }}:${{ github.sha }}
